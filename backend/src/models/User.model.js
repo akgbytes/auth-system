@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const userSchema = new mongoose.Schema(
   {
@@ -33,8 +34,11 @@ const userSchema = new mongoose.Schema(
     resetPasswordToken: {
       type: String,
     },
-    resetPasswordExpires: {
+    resetPasswordExpiry: {
       type: Date,
+    },
+    refreshToken: {
+      type: String,
     },
   },
   { timestamps: true }
@@ -47,5 +51,17 @@ userSchema.pre("save", async function (next) {
     next();
   }
 });
+
+userSchema.methods.generateAccessAndRefreshToken = function () {
+  const refreshToken = jwt.sign({ id: this._id }, process.env.JWT_SECRET_KEY, {
+    expiresIn: "24h",
+  });
+
+  const accessToken = jwt.sign({ id: this._id }, process.env.JWT_SECRET_KEY, {
+    expiresIn: "5min",
+  });
+
+  return { accessToken, refreshToken };
+};
 
 export default mongoose.model("User", userSchema);
