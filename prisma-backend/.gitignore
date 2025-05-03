@@ -1,0 +1,35 @@
+# Node modules
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+
+# Prisma
+prisma/dev.db
+prisma/*.sqlite
+prisma/migrations/
+*.db-journal
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Typescript cache
+*.tsbuildinfo
+
+# Generated Prisma Client (optional)
+src/generated/
