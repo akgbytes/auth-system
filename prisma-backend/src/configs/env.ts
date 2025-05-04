@@ -1,7 +1,5 @@
 import { z } from "zod";
 import dotenv from "dotenv";
-import CustomError from "../utils/CustomError";
-import { ResponseStatus } from "../utils/constants";
 
 dotenv.config();
 
@@ -43,5 +41,4 @@ const createEnv = (env: NodeJS.ProcessEnv) => {
   return result.data;
 };
 
-const env = createEnv(process.env);
-export default env;
+export const env = createEnv(process.env);

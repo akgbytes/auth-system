@@ -20,12 +20,13 @@ const colors = {
 };
 
 addColors(colors);
-const logger = createLogger({
+
+export const logger = createLogger({
   level: "info",
   format: format.combine(
     format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     format.splat(),
-    format.json(),
+    format.json()
   ),
 
   transports: [
@@ -33,12 +34,10 @@ const logger = createLogger({
       format: format.combine(
         uppercaseFormat(),
         format.colorize(),
-        customFormat,
+        customFormat
       ),
     }),
     new transports.File({ filename: "logs/error.log", level: "error" }),
     new transports.File({ filename: "logs/combined.log" }),
   ],
 });
-
-export default logger;

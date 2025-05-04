@@ -1,8 +1,10 @@
 import { SafeParseReturnType } from "zod";
-import CustomError from "./CustomError";
+import { CustomError } from "./CustomError";
 import { ResponseStatus } from "./constants";
 
-const handleZodError = <T>(result: SafeParseReturnType<unknown, T>): T => {
+export const handleZodError = <T>(
+  result: SafeParseReturnType<unknown, T>
+): T => {
   if (!result.success) {
     const missing =
       result.error.issues[0].code === "invalid_type" &&
@@ -23,5 +25,3 @@ const handleZodError = <T>(result: SafeParseReturnType<unknown, T>): T => {
 
   return result.data;
 };
-
-export default handleZodError;
