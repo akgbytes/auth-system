@@ -19,7 +19,7 @@ model User {
   email                   String    @unique
   password                String?
   fullname                String
-  avatar                  String?
+  avatar                  String?   @default("https://avatar.iran.liara.run/public/7")
   provider                Provider  @default(local)
   isEmailVerified         Boolean   @default(false)
   verificationToken       String?

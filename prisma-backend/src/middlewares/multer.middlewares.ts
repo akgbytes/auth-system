@@ -1,5 +1,7 @@
 import multer from "multer";
 import path from "path";
+import { CustomError } from "../utils/CustomError";
+import { ResponseStatus } from "../utils/constants";
 
 const storage = multer.diskStorage({
   destination: function (req, res, cb) {
@@ -13,8 +15,22 @@ const storage = multer.diskStorage({
   },
 });
 
+const fileFilter: multer.Options["fileFilter"] = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(
+      new CustomError(
+        ResponseStatus.BadRequest,
+        "Only image files are allowed!"
+      )
+    );
+  }
+};
+
 export const upload = multer({
   storage,
+  fileFilter,
   limits: {
     fileSize: 2 * 1000 * 1000,
   },

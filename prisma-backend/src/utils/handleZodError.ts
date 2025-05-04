@@ -11,10 +11,17 @@ export const handleZodError = <T>(
       result.error.issues[0].received === "undefined";
 
     if (missing) {
-      throw new CustomError(
-        ResponseStatus.InternalServerError,
-        `Missing ${result.error.issues[0].path} field`
-      );
+      if (result.error.issues[0].path.length) {
+        throw new CustomError(
+          ResponseStatus.InternalServerError,
+          `Missing ${result.error.issues[0].path} field`
+        );
+      } else {
+        throw new CustomError(
+          ResponseStatus.InternalServerError,
+          `Missing required field`
+        );
+      }
     }
 
     throw new CustomError(
