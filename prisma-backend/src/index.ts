@@ -13,7 +13,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 import healthRoutes from "./routes/healthCheck.routes";
+import authRoutes from "./routes/auth.routes";
+import { errorHandler } from "./middlewares/error.middlewares";
 app.use("/api/v1/healthCheck", healthRoutes);
+app.use("/api/v1/auth", authRoutes);
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   logger.info(`Server is running on port: ${PORT}`);

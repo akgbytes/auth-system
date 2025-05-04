@@ -12,12 +12,14 @@
   },
   "dependencies": {
     "@prisma/client": "^6.7.0",
+    "cloudinary": "^2.6.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mailgen": "^2.0.29",
+    "multer": "^1.4.5-lts.2",
     "nodemailer": "^6.10.1",
     "prisma": "^6.7.0",
     "winston": "^3.17.0",
@@ -27,6 +29,7 @@
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
+    "@types/multer": "^1.4.12",
     "@types/node": "^22.15.3",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3"
