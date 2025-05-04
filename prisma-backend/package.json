@@ -7,19 +7,20 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-   "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-   "start": "tsc -b && npm dist/index.js"
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "start": "tsc -b && npm dist/index.js"
   },
   "dependencies": {
-    "express": "^5.1.0",
-    "prisma": "^6.7.0",
     "@prisma/client": "^6.7.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
+    "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mailgen": "^2.0.29",
     "nodemailer": "^6.10.1",
+    "prisma": "^6.7.0",
+    "winston": "^3.17.0",
     "zod": "^3.24.3"
   },
   "devDependencies": {
