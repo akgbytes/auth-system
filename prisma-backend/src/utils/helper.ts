@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { env } from "../configs/env";
 import { StringValue } from "ms";
+import { decodedUser } from "../types";
 
 export const hashPassword = async (password: string) =>
   await bcrypt.hash(password, 10);
@@ -12,7 +13,7 @@ export const isPasswordCorrect = async (
   storedPassword: string
 ) => bcrypt.compare(enteredPassword, storedPassword);
 
-export const generateAccessToken = (user: any) =>
+export const generateAccessToken = (user: decodedUser) =>
   jwt.sign(
     {
       id: user.id,
@@ -22,7 +23,7 @@ export const generateAccessToken = (user: any) =>
     { expiresIn: env.ACCESS_TOKEN_EXPIRY as StringValue }
   );
 
-export const generateRefreshToken = (user: any) =>
+export const generateRefreshToken = (user: decodedUser) =>
   jwt.sign(
     {
       id: user.id,
@@ -32,12 +33,12 @@ export const generateRefreshToken = (user: any) =>
     { expiresIn: env.REFRESH_TOKEN_EXPIRY as StringValue }
   );
 
-export const hashToken = (token: string) =>
+export const createHash = (token: string) =>
   crypto.createHash("sha256").update(token).digest("hex");
 
 export const generateToken = () => {
   const unHashedToken = crypto.randomBytes(32).toString("hex");
-  const hashedToken = hashToken(unHashedToken);
+  const hashedToken = createHash(unHashedToken);
   const tokenExpiry = new Date(Date.now() + 30 * 60 * 1000);
 
   return { unHashedToken, hashedToken, tokenExpiry };
