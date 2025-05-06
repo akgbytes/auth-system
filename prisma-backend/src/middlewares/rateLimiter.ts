@@ -1,11 +1,14 @@
 import rateLimit from "express-rate-limit";
+import { ResponseStatus } from "../utils/constants";
 
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
+  max: 15, // limit each IP to 15 requests per windowMs
   message: {
-    status: 429,
-    message: "Too many requests, please try again later.",
+    statusCode: ResponseStatus.TooManyRequests,
+    message: "Too many requests, please try again later",
+    data: null,
+    success: false,
   },
   standardHeaders: true,
   legacyHeaders: false,

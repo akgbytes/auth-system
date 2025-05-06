@@ -15,24 +15,25 @@ import {
   generateToken,
   hashPassword,
   createHash,
-  isPasswordCorrect,
+  passwordMatch,
 } from "../utils/helper";
 import { sendResetPasswordMail, sendVerificationMail } from "../utils/sendMail";
 import {
   validateEmail,
   validateLogin,
-  validatePasswordReset,
+  validatePassword,
   validateRegister,
 } from "../validations/auth.validation";
 import { sanitizeUser } from "../utils/sanitizeUser";
 import { decodedUser } from "../types";
+import { verifyGoogleToken } from "../utils/verifyGoogleToken";
 
 export const register = asyncHandler(async (req, res) => {
   const { username, email, password, fullname } = handleZodError(
     validateRegister(req.body)
   );
 
-  logger.info(`Registration attempt for email: ${email}`);
+  logger.info(`Registration attempt for ${email}`);
 
   const [existingEmail, existingUsername] = await Promise.all([
     prisma.user.findUnique({ where: { email } }),
@@ -58,9 +59,9 @@ export const register = asyncHandler(async (req, res) => {
     try {
       const uploaded = await uploadOnCloudinary(req.file.path);
       avatarUrl = uploaded?.secure_url;
-      logger.info(`Avatar uploaded for user ${email}`);
+      logger.info(`Avatar uploaded for ${email}`);
     } catch (err: any) {
-      logger.warn(`Avatar upload failed for ${email} ${err.message}`);
+      logger.warn(`Avatar upload failed for ${email} due to ${err.message}`);
     }
   }
 
@@ -217,20 +218,32 @@ export const login = asyncHandler(async (req, res) => {
     throw new CustomError(ResponseStatus.Unauthorized, "Email is not verified");
   }
 
-  const passwordMatch = await isPasswordCorrect(
+  const isPasswordCorrect = await passwordMatch(
     password,
     user.password as string
   );
 
-  if (!passwordMatch) {
+  if (!isPasswordCorrect) {
     throw new CustomError(ResponseStatus.Unauthorized, "Invalid credentials");
   }
 
-  const existingSessions = await prisma.session.findMany({
+  const userAgent = req.headers["user-agent"];
+  const ipAddress = req.ip;
+
+  const existingSession = await prisma.session.findFirst({
+    where: {
+      userId: user.id,
+      userAgent,
+      ipAddress,
+    },
+  });
+
+  const existingSessionsCount = await prisma.session.count({
     where: { userId: user.id },
   });
 
-  if (existingSessions.length >= env.MAX_SESSIONS) {
+  // Enforce session limit only if new session is being created
+  if (!existingSession && existingSessionsCount >= env.MAX_SESSIONS) {
     throw new CustomError(
       ResponseStatus.TooManyRequests,
       "Maximum session limit reached. Please logout from another device first."
@@ -244,15 +257,27 @@ export const login = asyncHandler(async (req, res) => {
     Date.now() + ms(env.REFRESH_TOKEN_EXPIRY as StringValue)
   );
 
-  await prisma.session.create({
-    data: {
-      userId: user.id,
-      userAgent: req.headers["user-agent"],
-      ipAddress: req.ip,
-      refreshToken,
-      expiresAt,
-    },
-  });
+  if (existingSession) {
+    // Update refreshToken + expiry for existing session
+    await prisma.session.update({
+      where: { id: existingSession.id },
+      data: {
+        refreshToken,
+        expiresAt,
+      },
+    });
+  } else {
+    // Create new session
+    await prisma.session.create({
+      data: {
+        userId: user.id,
+        userAgent,
+        ipAddress,
+        refreshToken,
+        expiresAt,
+      },
+    });
+  }
 
   logger.info("User logged in", { email: user.email });
 
@@ -330,7 +355,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
 export const resetPassword = asyncHandler(async (req, res) => {
   const { token } = req.params;
-  const { password } = handleZodError(validatePasswordReset(req.body));
+  const { password } = handleZodError(validatePassword(req.body));
 
   if (!token) {
     throw new CustomError(ResponseStatus.BadRequest, "Reset token is missing");
@@ -353,6 +378,13 @@ export const resetPassword = asyncHandler(async (req, res) => {
   }
 
   const hashedPassword = await hashPassword(password);
+
+  if (user.password === hashedPassword) {
+    throw new CustomError(
+      ResponseStatus.BadRequest,
+      "Password must be different than old password"
+    );
+  }
 
   await prisma.user.update({
     where: { id: user.id },
@@ -430,14 +462,18 @@ export const logoutAllSessions = asyncHandler(async (req, res) => {
   const { id } = req.user;
   const { refreshToken } = req.cookies;
 
-  await prisma.session.deleteMany({
+  console.log("refresh token: ", refreshToken);
+
+  const result = await prisma.session.deleteMany({
     where: {
-      id,
+      userId: id,
       NOT: {
         refreshToken,
       },
     },
   });
+
+  console.log("res : ", result);
 
   logger.info("Logged out from all other sessions");
 
@@ -463,6 +499,7 @@ export const getActiveSessions = asyncHandler(async (req, res) => {
       userAgent: true,
       createdAt: true,
       expiresAt: true,
+      refreshToken: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -502,5 +539,108 @@ export const logoutSpecificSession = asyncHandler(async (req, res) => {
         "Logged out of specific session successfully",
         null
       )
+    );
+});
+
+export const googleLogin = asyncHandler(async (req, res) => {
+  const { credential } = req.body;
+  const payload = await verifyGoogleToken(credential);
+
+  const { email, name, picture } = payload;
+
+  if (!email || !name || !picture) {
+    throw new CustomError(200, "");
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  let user = existingUser;
+
+  // Creating new user
+  if (!user) {
+    const baseUsername = email.split("@")[0];
+    let username = baseUsername;
+
+    const existing = await prisma.user.findUnique({ where: { username } });
+    if (existing) {
+      username = `${baseUsername}_${crypto.randomUUID().slice(0, 6)}`;
+    }
+
+    user = await prisma.user.create({
+      data: {
+        email,
+        fullname: name,
+        isEmailVerified: true,
+        avatar: picture,
+        username,
+        provider: "google",
+      },
+    });
+  }
+
+  // Creating a session for existing user
+
+  const userAgent = req.headers["user-agent"];
+  const ipAddress = req.ip;
+
+  const existingSession = await prisma.session.findFirst({
+    where: {
+      userId: user.id,
+      userAgent,
+      ipAddress,
+    },
+  });
+
+  const existingSessionsCount = await prisma.session.count({
+    where: { userId: user.id },
+  });
+
+  // Enforce session limit only if new session is being created
+  if (!existingSession && existingSessionsCount >= env.MAX_SESSIONS) {
+    throw new CustomError(
+      ResponseStatus.TooManyRequests,
+      "Maximum session limit reached. Please logout from another device first."
+    );
+  }
+
+  const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user);
+
+  const expiresAt = new Date(
+    Date.now() + ms(env.REFRESH_TOKEN_EXPIRY as StringValue)
+  );
+
+  if (existingSession) {
+    // Update refreshToken + expiry for existing session
+    await prisma.session.update({
+      where: { id: existingSession.id },
+      data: {
+        refreshToken,
+        expiresAt,
+      },
+    });
+  } else {
+    // Create new session
+    await prisma.session.create({
+      data: {
+        userId: user.id,
+        userAgent,
+        ipAddress,
+        refreshToken,
+        expiresAt,
+      },
+    });
+  }
+
+  logger.info(`${email} logged in via Google`);
+
+  res
+    .status(ResponseStatus.Success)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
+    .json(
+      new ApiResponse(ResponseStatus.Success, "Google login successful", null)
     );
 });

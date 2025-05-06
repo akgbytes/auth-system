@@ -8,7 +8,7 @@ import { decodedUser } from "../types";
 export const hashPassword = async (password: string) =>
   await bcrypt.hash(password, 10);
 
-export const isPasswordCorrect = async (
+export const passwordMatch = async (
   enteredPassword: string,
   storedPassword: string
 ) => bcrypt.compare(enteredPassword, storedPassword);

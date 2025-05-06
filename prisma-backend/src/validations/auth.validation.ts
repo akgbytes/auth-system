@@ -32,7 +32,7 @@ const emailSchema = registerSchema.pick({
   email: true,
 });
 
-const passwordResetSchema = registerSchema
+const passwordSchema = registerSchema
   .pick({ password: true })
   .extend({ confirmPassword: z.string() })
   .refine((data) => data.password === data.confirmPassword, {
@@ -43,7 +43,7 @@ const passwordResetSchema = registerSchema
 type RegisterData = z.infer<typeof registerSchema>;
 type LoginData = z.infer<typeof loginSchema>;
 type EmailData = z.infer<typeof emailSchema>;
-type PasswordResetData = z.infer<typeof passwordResetSchema>;
+type PasswordData = z.infer<typeof passwordSchema>;
 
 export const validateRegister = (data: RegisterData) => {
   return registerSchema.safeParse(data);
@@ -57,6 +57,6 @@ export const validateEmail = (data: EmailData) => {
   return emailSchema.safeParse(data);
 };
 
-export const validatePasswordReset = (data: PasswordResetData) => {
-  return passwordResetSchema.safeParse(data);
+export const validatePassword = (data: PasswordData) => {
+  return passwordSchema.safeParse(data);
 };

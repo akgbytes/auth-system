@@ -2,6 +2,10 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
+import healthRoutes from "./routes/healthCheck.routes";
+import authRoutes from "./routes/auth.routes";
+import { errorHandler } from "./middlewares/error.middlewares";
+import { env } from "./configs/env";
 
 const app = express();
 
@@ -18,10 +22,6 @@ app.use(
   })
 );
 
-import healthRoutes from "./routes/healthCheck.routes";
-import authRoutes from "./routes/auth.routes";
-import { errorHandler } from "./middlewares/error.middlewares";
-import { env } from "./configs/env";
 app.use("/api/v1/healthcheck", healthRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use(errorHandler);

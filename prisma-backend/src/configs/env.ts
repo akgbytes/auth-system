@@ -31,6 +31,9 @@ const createEnv = (env: NodeJS.ProcessEnv) => {
     MAX_SESSIONS: z.coerce.number({
       message: "Session must be a valid number",
     }),
+
+    GOOGLE_CLIENT_ID: z.string().nonempty(),
+    GOOGLE_CLIENT_SECRET: z.string().nonempty(),
   });
 
   const result = envSchema.safeParse(env);
