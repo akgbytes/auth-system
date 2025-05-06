@@ -1,6 +1,6 @@
 import { User } from "./generated/prisma";
 
-export type decodedUser = Pick<User, "id" | "username">;
+export type decodedUser = Pick<User, "id" | "username" | "role">;
 
 declare global {
   namespace Express {

@@ -13,6 +13,11 @@ enum Provider {
   google
 }
 
+enum Role {
+  user
+  admin
+}
+
 model User {
   id                      String    @id @default(uuid())
   username                String    @unique
@@ -20,6 +25,7 @@ model User {
   password                String?
   fullname                String
   avatar                  String?   @default("https://avatar.iran.liara.run/public/7")
+  role                    Role      @default(user)
   provider                Provider  @default(local)
   isEmailVerified         Boolean   @default(false)
   verificationToken       String?

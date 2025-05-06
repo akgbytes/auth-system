@@ -7,6 +7,8 @@ export const sanitizeUser = (user: User) => {
     verificationTokenExpiry,
     resetPasswordToken,
     resetPasswordExpiry,
+    createdAt,
+    updatedAt,
     ...safeUser
   } = user;
   return safeUser;

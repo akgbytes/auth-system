@@ -462,8 +462,6 @@ export const logoutAllSessions = asyncHandler(async (req, res) => {
   const { id } = req.user;
   const { refreshToken } = req.cookies;
 
-  console.log("refresh token: ", refreshToken);
-
   const result = await prisma.session.deleteMany({
     where: {
       userId: id,
@@ -472,8 +470,6 @@ export const logoutAllSessions = asyncHandler(async (req, res) => {
       },
     },
   });
-
-  console.log("res : ", result);
 
   logger.info("Logged out from all other sessions");
 
