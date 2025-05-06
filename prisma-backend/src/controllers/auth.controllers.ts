@@ -34,13 +34,20 @@ export const register = asyncHandler(async (req, res) => {
 
   logger.info(`Registration attempt for email: ${email}`);
 
-  const existingUser = await prisma.user.findUnique({ where: { email } });
+  const [existingEmail, existingUsername] = await Promise.all([
+    prisma.user.findUnique({ where: { email } }),
+    prisma.user.findUnique({ where: { username } }),
+  ]);
 
-  if (existingUser) {
+  if (existingEmail) {
     throw new CustomError(
       ResponseStatus.Conflict,
       "Email is already registered"
     );
+  }
+
+  if (existingUsername) {
+    throw new CustomError(ResponseStatus.Conflict, "Username is already taken");
   }
 
   const hashedPassword = await hashPassword(password);
@@ -48,13 +55,12 @@ export const register = asyncHandler(async (req, res) => {
 
   let avatarUrl;
   if (req.file) {
-    // wrapping in try catch bcuz upload na hone se we dont want to stop registration process
     try {
       const uploaded = await uploadOnCloudinary(req.file.path);
       avatarUrl = uploaded?.secure_url;
-      logger.info(`Avatar uploaded for user: ${email}`);
+      logger.info(`Avatar uploaded for user ${email}`);
     } catch (err: any) {
-      logger.warn(`Avatar upload failed for ${email}: ${err.message}`);
+      logger.warn(`Avatar upload failed for ${email} ${err.message}`);
     }
   }
 
@@ -113,6 +119,13 @@ export const verifyEmail = asyncHandler(async (req, res) => {
     );
   }
 
+  const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user);
+
+  const expiresAt = new Date(
+    Date.now() + ms(env.REFRESH_TOKEN_EXPIRY as StringValue)
+  );
+
   await prisma.user.update({
     where: { id: user.id },
     data: {
@@ -122,10 +135,22 @@ export const verifyEmail = asyncHandler(async (req, res) => {
     },
   });
 
+  await prisma.session.create({
+    data: {
+      userId: user.id,
+      userAgent: req.headers["user-agent"],
+      ipAddress: req.ip,
+      refreshToken,
+      expiresAt,
+    },
+  });
+
   logger.info(`Email verified ${user.email}`);
 
   res
     .status(ResponseStatus.Success)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
     .json(
       new ApiResponse(
         ResponseStatus.Success,
@@ -201,6 +226,17 @@ export const login = asyncHandler(async (req, res) => {
     throw new CustomError(ResponseStatus.Unauthorized, "Invalid credentials");
   }
 
+  const existingSessions = await prisma.session.findMany({
+    where: { userId: user.id },
+  });
+
+  if (existingSessions.length >= env.MAX_SESSIONS) {
+    throw new CustomError(
+      ResponseStatus.TooManyRequests,
+      "Maximum session limit reached. Please logout from another device first."
+    );
+  }
+
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 
@@ -222,16 +258,8 @@ export const login = asyncHandler(async (req, res) => {
 
   res
     .status(ResponseStatus.Success)
-    .cookie("accessToken", accessToken, {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: env.NODE_ENV === "production",
-    })
-    .cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: env.NODE_ENV === "production",
-    })
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
     .json(new ApiResponse(ResponseStatus.Success, "Login successful", null));
 });
 
@@ -239,10 +267,7 @@ export const logout = asyncHandler(async (req, res) => {
   const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
-    throw new CustomError(
-      ResponseStatus.BadRequest,
-      "Refresh token not provided"
-    );
+    throw new CustomError(ResponseStatus.BadRequest, "Refresh token missing");
   }
 
   await prisma.session.delete({
@@ -290,9 +315,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   await sendResetPasswordMail(user.fullname, user.email, unHashedToken);
 
-  logger.info("Password reset email sent", {
-    email: user.email,
-  });
+  logger.info(`Password reset email sent to ${user.email}`);
 
   res
     .status(ResponseStatus.Success)
@@ -343,7 +366,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   // sare existing session ko invalidate krna h bcuz of security
   await prisma.session.deleteMany({ where: { userId: user.id } });
 
-  logger.info("Password reset successful", { email: user.email });
+  logger.info(`Password reset successful for ${user.email}`);
 
   res
     .status(ResponseStatus.Success)
@@ -367,18 +390,12 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
   try {
     decoded = jwt.verify(incomingRefreshToken, env.REFRESH_TOKEN_SECRET);
   } catch (error: any) {
-    // if (error.name === "TokenExpiredError") {
-    //   logger.warn("Expired access token");
-    // } else if (error.name === "JsonWebTokenError") {
-    //   logger.warn("Invalid access token");
-    // }
     throw new CustomError(
       ResponseStatus.Unauthorized,
       "Invalid or expired refresh token"
     );
   }
 
-  // it is possible that token is valid but already refreshed and someone is using old token
   const validToken = await prisma.session.findUnique({
     where: { refreshToken: incomingRefreshToken },
   });
@@ -386,7 +403,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
   if (!validToken) {
     throw new CustomError(
       ResponseStatus.Unauthorized,
-      "Refresh token has been used"
+      "Refresh token has been used or is invalid"
     );
   }
 
@@ -400,7 +417,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     },
   });
 
-  // logger.info("Access token refreshed", { email: user.email });
+  logger.info("Access token refreshed");
 
   res
     .status(200)
@@ -421,6 +438,8 @@ export const logoutAllSessions = asyncHandler(async (req, res) => {
       },
     },
   });
+
+  logger.info("Logged out from all other sessions");
 
   res
     .status(ResponseStatus.Success)
@@ -455,6 +474,33 @@ export const getActiveSessions = asyncHandler(async (req, res) => {
         ResponseStatus.Success,
         "Fetched all active sessions successfully",
         sessions
+      )
+    );
+});
+
+export const logoutSpecificSession = asyncHandler(async (req, res) => {
+  const { id } = req.user;
+  const { sessionId } = req.params;
+
+  const session = await prisma.session.findUnique({
+    where: { id: sessionId },
+  });
+
+  if (!session || session.userId !== id) {
+    throw new CustomError(ResponseStatus.Unauthorized, "Invalid session ID");
+  }
+
+  await prisma.session.delete({ where: { id: sessionId } });
+
+  logger.info("User logged out of specific session");
+
+  res
+    .status(ResponseStatus.Success)
+    .json(
+      new ApiResponse(
+        ResponseStatus.Success,
+        "Logged out of specific session successfully",
+        null
       )
     );
 });

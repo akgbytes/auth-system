@@ -27,6 +27,10 @@ const createEnv = (env: NodeJS.ProcessEnv) => {
     CLOUDINARY_SECRET_KEY: z.string().nonempty(),
 
     NODE_ENV: z.enum(["development", "production"]),
+
+    MAX_SESSIONS: z.coerce.number({
+      message: "Session must be a valid number",
+    }),
   });
 
   const result = envSchema.safeParse(env);

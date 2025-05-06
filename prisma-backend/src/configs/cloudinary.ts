@@ -19,11 +19,8 @@ export const uploadOnCloudinary = async (localFilePath: string) => {
 
     fs.unlinkSync(localFilePath);
     return response;
-  } catch (error) {
+  } catch (error: any) {
     fs.unlinkSync(localFilePath);
-    throw new CustomError(
-      ResponseStatus.InternalServerError,
-      "Failed to upload on cloudinary"
-    );
+    throw new CustomError(ResponseStatus.InternalServerError, error.message);
   }
 };

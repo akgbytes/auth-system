@@ -31,5 +31,5 @@ Thumbs.db
 # Typescript cache
 *.tsbuildinfo
 
-# Generated Prisma Client (optional)
+# Generated Prisma Client
 src/generated/
