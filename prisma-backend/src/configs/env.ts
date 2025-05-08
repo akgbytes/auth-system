@@ -1,5 +1,6 @@
 import { z } from "zod";
 import dotenv from "dotenv";
+import { logger } from "./logger";
 
 dotenv.config();
 
@@ -37,12 +38,14 @@ const createEnv = (env: NodeJS.ProcessEnv) => {
   });
 
   const result = envSchema.safeParse(env);
+
   if (!result.success) {
     const errorMessages = result.error.errors
-      .map((err) => `${err.path.join(".")}: ${err.message}`)
+      .map((err) => `- ${err.path.join(".")}: ${err.message}`)
       .join("\n");
 
-    throw new Error(`Error occured in .env \n${errorMessages}`);
+    logger.error(`Environment variable validation failed:\n${errorMessages}`);
+    process.exit(1);
   }
 
   return result.data;
