@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "start": "tsc -b && npm dist/index.js"
+    "start": "tsc -b && node dist/index.js"
   },
   "dependencies": {
     "@prisma/client": "^6.7.0",
