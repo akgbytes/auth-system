@@ -24,13 +24,7 @@ export const getProfile = asyncHandler(async (req, res) => {
 
   res
     .status(ResponseStatus.Success)
-    .json(
-      new ApiResponse(
-        ResponseStatus.Success,
-        "User profile fetched successfully",
-        safeUser
-      )
-    );
+    .json(new ApiResponse(ResponseStatus.Success, "User profile fetched successfully", safeUser));
 });
 
 export const changePassword = asyncHandler(async (req, res) => {
@@ -63,13 +57,7 @@ export const changePassword = asyncHandler(async (req, res) => {
 
   res
     .status(ResponseStatus.Success)
-    .json(
-      new ApiResponse(
-        ResponseStatus.Success,
-        "Password changed successfully",
-        null
-      )
-    );
+    .json(new ApiResponse(ResponseStatus.Success, "Password changed successfully", null));
 });
 
 export const updateProfile = asyncHandler(async (req, res) => {});

@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { env } from "../configs/env";
 import { CustomError } from "./CustomError";
 import { ResponseStatus } from "./constants";
+import { capitalize } from "./helper";
 
 const mailGenerator = new Mailgen({
   theme: "default",
@@ -12,11 +13,7 @@ const mailGenerator = new Mailgen({
   },
 });
 
-const sendMail = async (
-  email: string,
-  subject: string,
-  content: Mailgen.Content
-) => {
+const sendMail = async (email: string, subject: string, content: Mailgen.Content) => {
   const transporter = nodemailer.createTransport({
     host: env.MAILTRAP_HOST,
     port: env.MAILTRAP_PORT,
@@ -39,10 +36,7 @@ const sendMail = async (
       html,
     });
   } catch (err) {
-    throw new CustomError(
-      ResponseStatus.InternalServerError,
-      `Failed to send "${subject}" email.`
-    );
+    throw new CustomError(ResponseStatus.InternalServerError, `Failed to send "${subject}" email.`);
   }
 };
 
@@ -88,32 +82,18 @@ const resetPasswordMailContent = (fullName: string, link: string) => {
   };
 };
 
-const sendVerificationMail = async (
-  fullName: string,
-  email: string,
-  token: string
-) => {
+const sendVerificationMail = async (fullName: string, email: string, token: string) => {
   const link = `${env.SERVER_URL}/api/v1/auth/verify/${token}`;
+  const capitalName = capitalize(fullName);
 
-  await sendMail(
-    email,
-    "Verify Your Email",
-    emailVerificationMailContent(fullName, link)
-  );
+  await sendMail(email, "Verify Your Email", emailVerificationMailContent(capitalName, link));
 };
 
-const sendResetPasswordMail = async (
-  fullName: string,
-  email: string,
-  token: string
-) => {
+const sendResetPasswordMail = async (fullName: string, email: string, token: string) => {
   const link = `${env.SERVER_URL}/api/v1/auth/password/reset/${token}`;
+  const capitalName = capitalize(fullName);
 
-  await sendMail(
-    email,
-    "Reset Your Password",
-    resetPasswordMailContent(fullName, link)
-  );
+  await sendMail(email, "Reset Your Password", resetPasswordMailContent(capitalName, link));
 };
 
 export { sendVerificationMail, sendResetPasswordMail };

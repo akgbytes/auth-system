@@ -7,10 +7,7 @@ const client = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 
 export const verifyGoogleToken = async (credential: string) => {
   if (!credential) {
-    throw new CustomError(
-      ResponseStatus.BadRequest,
-      "Google credential is required"
-    );
+    throw new CustomError(ResponseStatus.BadRequest, "Google credential is required");
   }
 
   let payload;
@@ -27,7 +24,7 @@ export const verifyGoogleToken = async (credential: string) => {
   if (!payload) {
     throw new CustomError(
       ResponseStatus.Unauthorized,
-      "Google token verification failed: No payload received"
+      "Google token verification failed, No payload received",
     );
   }
 

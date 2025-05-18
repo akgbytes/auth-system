@@ -4,12 +4,7 @@ import { logger } from "../configs/logger";
 import { CustomError } from "../utils/CustomError";
 import { Prisma } from "../generated/prisma";
 
-export const errorHandler = (
-  error: any,
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
+export const errorHandler = (error: any, req: Request, res: Response, next: NextFunction): void => {
   let customError: CustomError;
 
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -17,33 +12,25 @@ export const errorHandler = (
       case "P2002":
         customError = new CustomError(
           ResponseStatus.Conflict,
-          `${
-            (error.meta?.target as string[] | undefined)?.join(", ") || "Field"
-          } already exists`
+          `${(error.meta?.target as string[] | undefined)?.join(", ") || "Field"} already exists`,
         );
         break;
 
       case "P2025":
-        console.log(error);
         customError = new CustomError(
           ResponseStatus.NotFound,
-          `${error.meta?.modelName || "Resource"} not found`
+          `${error.meta?.modelName || "Resource"} not found`,
         );
         break;
 
       case "P2003":
         customError = new CustomError(
           ResponseStatus.BadRequest,
-          `Foreign key constraint failed on ${
-            error.meta?.field_name || "a related field"
-          }.`
+          `Foreign key constraint failed on ${error.meta?.field_name || "a related field"}.`,
         );
         break;
       default:
-        customError = new CustomError(
-          ResponseStatus.BadRequest,
-          "Database request error"
-        );
+        customError = new CustomError(ResponseStatus.BadRequest, "Database request error");
         break;
     }
   } else if (error instanceof CustomError) {
@@ -51,11 +38,18 @@ export const errorHandler = (
   } else {
     customError = new CustomError(
       ResponseStatus.InternalServerError,
-      error.message || "Internal Server Error"
+      error.message || "Internal Server Error",
     );
   }
 
-  logger.error(customError.message);
+  logger.error("Error occurred", {
+    message: customError.message,
+    code: customError.statusCode,
+    path: req.path,
+    method: req.method,
+    stack: customError.stack,
+    ip: req.ip,
+  });
 
   res.status(customError.statusCode).json({
     statusCode: customError.statusCode,

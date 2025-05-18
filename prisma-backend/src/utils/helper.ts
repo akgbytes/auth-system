@@ -5,13 +5,10 @@ import { env } from "../configs/env";
 import { StringValue } from "ms";
 import { decodedUser } from "../types";
 
-export const hashPassword = async (password: string) =>
-  await bcrypt.hash(password, 10);
+export const hashPassword = async (password: string) => await bcrypt.hash(password, 10);
 
-export const passwordMatch = async (
-  enteredPassword: string,
-  storedPassword: string
-) => bcrypt.compare(enteredPassword, storedPassword);
+export const passwordMatch = async (enteredPassword: string, storedPassword: string) =>
+  bcrypt.compare(enteredPassword, storedPassword);
 
 export const generateAccessToken = (user: decodedUser) =>
   jwt.sign(
@@ -21,7 +18,7 @@ export const generateAccessToken = (user: decodedUser) =>
       role: user.role,
     },
     env.ACCESS_TOKEN_SECRET,
-    { expiresIn: env.ACCESS_TOKEN_EXPIRY as StringValue }
+    { expiresIn: env.ACCESS_TOKEN_EXPIRY as StringValue },
   );
 
 export const generateRefreshToken = (user: decodedUser) =>
@@ -32,7 +29,7 @@ export const generateRefreshToken = (user: decodedUser) =>
       role: user.role,
     },
     env.REFRESH_TOKEN_SECRET,
-    { expiresIn: env.REFRESH_TOKEN_EXPIRY as StringValue }
+    { expiresIn: env.REFRESH_TOKEN_EXPIRY as StringValue },
   );
 
 export const createHash = (token: string) =>
@@ -45,3 +42,9 @@ export const generateToken = () => {
 
   return { unHashedToken, hashedToken, tokenExpiry };
 };
+
+export const capitalize = (name: string) =>
+  name
+    .split(" ")
+    .map((n) => n.charAt(0).toUpperCase() + n.slice(1))
+    .join(" ");

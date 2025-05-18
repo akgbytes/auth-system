@@ -19,12 +19,7 @@ const fileFilter: multer.Options["fileFilter"] = (req, file, cb) => {
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    cb(
-      new CustomError(
-        ResponseStatus.BadRequest,
-        "Only image files are allowed!"
-      )
-    );
+    cb(new CustomError(ResponseStatus.BadRequest, "Only image files are allowed!"));
   }
 };
 

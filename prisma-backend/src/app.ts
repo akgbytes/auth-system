@@ -16,10 +16,10 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: env.CLIENT_URL,
-    credentials: true, // allow cookies / authorization headers
+    credentials: true, // allow cookies n authorization headers
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 app.use("/api/v1/healthcheck", healthRoutes);

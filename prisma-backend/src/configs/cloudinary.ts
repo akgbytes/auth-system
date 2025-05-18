@@ -1,8 +1,8 @@
 import { v2 as cloudinary } from "cloudinary";
+import fs from "fs/promises";
 import { env } from "./env";
 import { CustomError } from "../utils/CustomError";
 import { ResponseStatus } from "../utils/constants";
-import fs from "fs";
 
 cloudinary.config({
   cloud_name: env.CLOUDINARY_NAME,
@@ -11,16 +11,23 @@ cloudinary.config({
 });
 
 export const uploadOnCloudinary = async (localFilePath: string) => {
+  if (!localFilePath) {
+    throw new CustomError(ResponseStatus.BadRequest, "No file path provided");
+  }
+
   try {
-    if (!localFilePath) return null;
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
     });
 
-    fs.unlinkSync(localFilePath);
     return response;
   } catch (error: any) {
-    fs.unlinkSync(localFilePath);
     throw new CustomError(ResponseStatus.InternalServerError, error.message);
+  } finally {
+    try {
+      await fs.unlink(localFilePath);
+    } catch (unlinkErr) {
+      console.warn(`Failed to delete local file: ${localFilePath}`, unlinkErr);
+    }
   }
 };
