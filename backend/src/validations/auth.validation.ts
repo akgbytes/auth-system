@@ -1,0 +1,83 @@
+import { resetPassword } from "./../controllers/auth.controllers";
+import { z } from "zod";
+
+const strongPassword = z
+  .string()
+  .min(6, { message: "Password must be at least 6 characters long" })
+  .max(16, { message: "Password must be at most 16 characters long" })
+  .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{6,}$/, {
+    message:
+      "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.",
+  });
+
+const registerSchema = z.object({
+  username: z
+    .string()
+    .min(3, { message: "Username must be at least 3 characters long" })
+    .max(20, { message: "Username must be at most 20 characters long" }),
+
+  email: z.string().email({ message: "Invalid email address" }),
+
+  password: strongPassword,
+
+  fullname: z
+    .string()
+    .min(6, { message: "Fullname must be at least 6 characters long" })
+    .max(20, { message: "Fullname must be at most 20 characters long" }),
+});
+
+const loginSchema = registerSchema.pick({
+  email: true,
+  password: true,
+});
+
+const emailSchema = registerSchema.pick({
+  email: true,
+});
+
+const changePasswordSchema = z
+  .object({
+    currentPassword: strongPassword,
+    newPassword: strongPassword,
+    confirmNewPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "Confirm password must match the new password",
+    path: ["confirmNewPassword"],
+  });
+
+const resetPasswordSchema = z
+  .object({
+    newPassword: strongPassword,
+    confirmNewPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "Confirm password must match the new password",
+    path: ["confirmNewPassword"],
+  });
+
+type RegisterData = z.infer<typeof registerSchema>;
+type LoginData = z.infer<typeof loginSchema>;
+type EmailData = z.infer<typeof emailSchema>;
+type ChangePasswordData = z.infer<typeof changePasswordSchema>;
+type ResetPasswordData = z.infer<typeof resetPasswordSchema>;
+
+export const validateRegister = (data: RegisterData) => {
+  return registerSchema.safeParse(data);
+};
+
+export const validateLogin = (data: LoginData) => {
+  return loginSchema.safeParse(data);
+};
+
+export const validateEmail = (data: EmailData) => {
+  return emailSchema.safeParse(data);
+};
+
+export const validateChangePassword = (data: ChangePasswordData) => {
+  return changePasswordSchema.safeParse(data);
+};
+
+export const validateResetPassword = (data: ResetPasswordData) => {
+  return resetPasswordSchema.safeParse(data);
+};
