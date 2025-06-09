@@ -1,3 +1,4 @@
+import { uploadOnCloudinary } from "../configs/cloudinary";
 import { prisma } from "../configs/db";
 import { logger } from "../configs/logger";
 import { ApiResponse } from "../utils/ApiResponse";
@@ -7,6 +8,7 @@ import { handleZodError } from "../utils/handleZodError";
 import { hashPassword, passwordMatch } from "../utils/helper";
 import { sanitizeUser } from "../utils/sanitizeUser";
 import { validateChangePassword } from "../validations/auth.validation";
+import { validateUpdateProfile } from "../validations/user.validation";
 
 export const getProfile = asyncHandler(async (req, res) => {
   const { id } = req.user;
@@ -60,4 +62,46 @@ export const changePassword = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, "Password changed successfully", null));
 });
 
-export const updateProfile = asyncHandler(async (req, res) => {});
+export const updateProfile = asyncHandler(async (req, res) => {
+  const { id, email } = req.user;
+  const { username, fullname } = handleZodError(validateUpdateProfile(req.body));
+
+  // Checking if username available
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      username,
+      NOT: { id },
+    },
+  });
+
+  if (existingUser) {
+    throw new CustomError(400, "Username is already taken");
+  }
+
+  let avatarUrl: string | undefined;
+  if (req.file) {
+    try {
+      const uploaded = await uploadOnCloudinary(req.file.path);
+      avatarUrl = uploaded?.secure_url;
+      logger.info("Avatar uploaded successfully", { email, avatarUrl });
+    } catch (err: any) {
+      logger.warn(`Avatar upload failed for ${email} due to ${err.message}`);
+    }
+  }
+
+  const updateData: any = {};
+  if (username) updateData.username = username;
+  if (fullname) updateData.fullname = fullname;
+  if (avatarUrl) updateData.avatar = avatarUrl;
+
+  const updatedUser = await prisma.user.update({
+    where: { id },
+    data: updateData,
+  });
+
+  const safeUser = sanitizeUser(updatedUser);
+
+  logger.info("User profile updated", { email: safeUser.email, userId: safeUser.id, ip: req.ip });
+
+  res.status(200).json(new ApiResponse(200, "Profile updated successfully", safeUser));
+});

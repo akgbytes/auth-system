@@ -14,14 +14,14 @@ import {
   getActiveSessions,
   googleLogin,
   logoutSpecificSession,
-} from "../controllers/auth.controllers";
-import { upload } from "../middlewares/multer.middlewares";
-import { isLoggedIn } from "../middlewares/auth.middlewares";
+} from "../controllers/auth.controller";
+import { upload } from "../middlewares/multer.middleware";
+import { isLoggedIn } from "../middlewares/auth.middleware";
 import {
   authRateLimiter,
   resendVerificationRateLimiter,
   forgotPasswordRateLimiter,
-} from "../middlewares/rateLimiter";
+} from "../middlewares/rateLimit.middleware";
 
 router.post(
   "/register",

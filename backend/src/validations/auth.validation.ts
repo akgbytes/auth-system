@@ -1,4 +1,4 @@
-import { resetPassword } from "./../controllers/auth.controllers";
+import { resetPassword } from "../controllers/auth.controller";
 import { z } from "zod";
 
 const strongPassword = z
@@ -23,7 +23,7 @@ const registerSchema = z.object({
   fullname: z
     .string()
     .min(6, { message: "Fullname must be at least 6 characters long" })
-    .max(20, { message: "Fullname must be at most 20 characters long" }),
+    .max(50, { message: "Fullname must be at most 50 characters long" }),
 });
 
 const loginSchema = registerSchema.pick({
