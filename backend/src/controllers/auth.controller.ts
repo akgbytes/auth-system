@@ -29,21 +29,16 @@ import { decodedUser } from "../types";
 import { verifyGoogleToken } from "../utils/verifyGoogleToken";
 
 export const register = asyncHandler(async (req, res) => {
-  const { username, email, password, fullname } = handleZodError(validateRegister(req.body));
+  console.log("data received: ", req.body, "\nfile: ", req.file);
+
+  const { email, password, fullname } = handleZodError(validateRegister(req.body));
 
   logger.info("Registration attempt", { email, ip: req.ip });
 
-  const [existingEmail, existingUsername] = await Promise.all([
-    prisma.user.findUnique({ where: { email } }),
-    prisma.user.findUnique({ where: { username } }),
-  ]);
+  const existingUser = await prisma.user.findUnique({ where: { email } });
 
-  if (existingEmail) {
+  if (existingUser) {
     throw new CustomError(409, "Email is already registered");
-  }
-
-  if (existingUsername) {
-    throw new CustomError(409, "Username is already taken");
   }
 
   const hashedPassword = await hashPassword(password);
@@ -62,7 +57,6 @@ export const register = asyncHandler(async (req, res) => {
 
   const user = await prisma.user.create({
     data: {
-      username,
       email,
       password: hashedPassword,
       fullname,
@@ -515,21 +509,12 @@ export const googleLogin = asyncHandler(async (req, res) => {
 
   // Creating new user
   if (!user) {
-    const baseUsername = email.split("@")[0];
-    let username = baseUsername;
-
-    const existing = await prisma.user.findUnique({ where: { username } });
-    if (existing) {
-      username = `${baseUsername}_${crypto.randomUUID().slice(0, 6)}`;
-    }
-
     user = await prisma.user.create({
       data: {
         email,
         fullname: name,
         isVerified: true,
         avatar: picture,
-        username,
         provider: "google",
       },
     });

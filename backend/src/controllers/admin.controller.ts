@@ -11,7 +11,6 @@ export const getAllUsers = asyncHandler(async (req, res) => {
     select: {
       id: true,
       email: true,
-      username: true,
       fullname: true,
       avatar: true,
       role: true,
@@ -33,7 +32,6 @@ export const getUserById = asyncHandler(async (req, res) => {
     select: {
       id: true,
       email: true,
-      username: true,
       fullname: true,
       avatar: true,
       role: true,

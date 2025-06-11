@@ -64,19 +64,7 @@ export const changePassword = asyncHandler(async (req, res) => {
 
 export const updateProfile = asyncHandler(async (req, res) => {
   const { id, email } = req.user;
-  const { username, fullname } = handleZodError(validateUpdateProfile(req.body));
-
-  // Checking if username available
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      username,
-      NOT: { id },
-    },
-  });
-
-  if (existingUser) {
-    throw new CustomError(400, "Username is already taken");
-  }
+  const { fullname } = handleZodError(validateUpdateProfile(req.body));
 
   let avatarUrl: string | undefined;
   if (req.file) {
@@ -90,7 +78,6 @@ export const updateProfile = asyncHandler(async (req, res) => {
   }
 
   const updateData: any = {};
-  if (username) updateData.username = username;
   if (fullname) updateData.fullname = fullname;
   if (avatarUrl) updateData.avatar = avatarUrl;
 
