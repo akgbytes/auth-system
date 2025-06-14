@@ -26,7 +26,7 @@ import { errorHandler } from "./middlewares/error.middleware";
 
 app.use("/api/v1/healthcheck", healthRoutes);
 app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use(errorHandler);
 

@@ -1,5 +1,5 @@
 import { resetPassword } from "../controllers/auth.controller";
-import { z } from "zod";
+import { boolean, z } from "zod";
 
 const strongPassword = z
   .string()
@@ -21,10 +21,14 @@ const registerSchema = z.object({
     .max(50, { message: "Fullname must be at most 50 characters long" }),
 });
 
-const loginSchema = registerSchema.pick({
-  email: true,
-  password: true,
-});
+const loginSchema = registerSchema
+  .pick({
+    email: true,
+    password: true,
+  })
+  .extend({
+    rememberMe: z.boolean().default(false),
+  });
 
 const emailSchema = registerSchema.pick({
   email: true,

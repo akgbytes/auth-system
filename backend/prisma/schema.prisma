@@ -41,6 +41,7 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String
   refreshToken String   @unique
+  rememberMe   Boolean  @default(false)
   userAgent    String?
   ipAddress    String?
   createdAt    DateTime @default(now())

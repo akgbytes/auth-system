@@ -6,7 +6,7 @@ import { env } from "../configs/env";
 import { logger } from "../configs/logger";
 import { ApiResponse } from "../utils/ApiResponse";
 import asyncHandler from "../utils/asyncHandler";
-import { accessTokenOptions, refreshTokenOptions } from "../configs/cookies";
+import { generateCookieOptions } from "../configs/cookies";
 import { CustomError } from "../utils/CustomError";
 import { handleZodError } from "../utils/handleZodError";
 import {
@@ -29,14 +29,11 @@ import { decodedUser } from "../types";
 import { verifyGoogleToken } from "../utils/verifyGoogleToken";
 
 export const register = asyncHandler(async (req, res) => {
-  console.log("data received: ", req.body, "\nfile: ", req.file);
-
   const { email, password, fullname } = handleZodError(validateRegister(req.body));
 
   logger.info("Registration attempt", { email, ip: req.ip });
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
-
   if (existingUser) {
     throw new CustomError(409, "Email is already registered");
   }
@@ -137,14 +134,9 @@ export const verifyEmail = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .cookie("accessToken", accessToken, accessTokenOptions)
-    .cookie("refreshToken", refreshToken, refreshTokenOptions)
-    .json(
-      new ApiResponse(200, "Email verified successfully", {
-        accessToken,
-        refreshToken,
-      }),
-    );
+    .cookie("accessToken", accessToken, generateCookieOptions({ type: "access" }))
+    .cookie("refreshToken", refreshToken, generateCookieOptions({ type: "refresh" }))
+    .json(new ApiResponse(200, "Email verified successfully", null));
 });
 
 export const resendVerificationEmail = asyncHandler(async (req, res) => {
@@ -186,7 +178,7 @@ export const resendVerificationEmail = asyncHandler(async (req, res) => {
 });
 
 export const login = asyncHandler(async (req, res) => {
-  const { email, password } = handleZodError(validateLogin(req.body));
+  const { email, password, rememberMe } = handleZodError(validateLogin(req.body));
 
   const user = await prisma.user.findUnique({ where: { email } });
 
@@ -259,9 +251,9 @@ export const login = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .cookie("accessToken", accessToken, accessTokenOptions)
-    .cookie("refreshToken", refreshToken, refreshTokenOptions)
-    .json(new ApiResponse(200, "Logged in successfully", { accessToken, refreshToken }));
+    .cookie("accessToken", accessToken, generateCookieOptions({ type: "access" }))
+    .cookie("refreshToken", refreshToken, generateCookieOptions({ type: "refresh", rememberMe }))
+    .json(new ApiResponse(200, "Logged in successfully", null));
 });
 
 export const logout = asyncHandler(async (req, res) => {
@@ -285,8 +277,18 @@ export const logout = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .clearCookie("accessToken", accessTokenOptions)
-    .clearCookie("refreshToken", refreshTokenOptions)
+    .clearCookie("accessToken", {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "strict",
+    })
+    .clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "strict",
+    })
+    .status(200)
+    .json({ message: "Logged out successfully" })
     .json(new ApiResponse(200, "Logged out successfully", null));
 });
 
@@ -415,8 +417,12 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .cookie("accessToken", accessToken, accessTokenOptions)
-    .cookie("refreshToken", refreshToken, refreshTokenOptions)
+    .cookie("accessToken", accessToken, generateCookieOptions({ type: "access" }))
+    .cookie(
+      "refreshToken",
+      refreshToken,
+      generateCookieOptions({ type: "refresh", rememberMe: validToken.rememberMe }),
+    )
     .json(new ApiResponse(200, "Access token refreshed successfully", null));
 });
 
@@ -492,8 +498,8 @@ export const logoutSpecificSession = asyncHandler(async (req, res) => {
 });
 
 export const googleLogin = asyncHandler(async (req, res) => {
-  const { credential } = req.body;
-  const payload = await verifyGoogleToken(credential);
+  const { token, rememberMe } = req.body;
+  const payload = await verifyGoogleToken(token);
 
   const { email, name, picture } = payload;
 
@@ -575,7 +581,7 @@ export const googleLogin = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .cookie("accessToken", accessToken, accessTokenOptions)
-    .cookie("refreshToken", refreshToken, refreshTokenOptions)
+    .cookie("accessToken", accessToken, generateCookieOptions({ type: "access" }))
+    .cookie("refreshToken", refreshToken, generateCookieOptions({ type: "refresh", rememberMe }))
     .json(new ApiResponse(200, "Google login successful", null));
 });

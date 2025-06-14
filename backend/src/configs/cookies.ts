@@ -1,16 +1,23 @@
 import ms, { StringValue } from "ms";
 import { env } from "./env";
 
-export const accessTokenOptions = {
-  httpOnly: true,
-  secure: env.NODE_ENV === "production",
-  sameSite: "strict" as const,
-  maxAge: ms(env.ACCESS_TOKEN_EXPIRY as StringValue),
-};
+interface CookieOptionsArgs {
+  rememberMe?: boolean;
+  type: "access" | "refresh";
+}
 
-export const refreshTokenOptions = {
-  httpOnly: true,
-  secure: env.NODE_ENV === "production",
-  sameSite: "strict" as const,
-  maxAge: ms(env.REFRESH_TOKEN_EXPIRY as StringValue),
-};
+export function generateCookieOptions({ type, rememberMe = false }: CookieOptionsArgs) {
+  const expiry =
+    type === "access"
+      ? env.ACCESS_TOKEN_EXPIRY
+      : rememberMe
+        ? env.REFRESH_TOKEN_EXPIRY_REMEMBER_ME
+        : env.REFRESH_TOKEN_EXPIRY;
+
+  return {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "strict" as const,
+    maxAge: ms(expiry as StringValue),
+  };
+}

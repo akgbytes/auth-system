@@ -1,15 +1,15 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import { BASE_URL, AUTH_URL } from "../../constants";
+import { BASE_URL, AUTH_URL, USERS_URL } from "../../constants";
 import type {
   LoginFormData,
   LoginResponse,
-  RegisterFormData,
   RegisterResponse,
   LogoutResponse,
   BaseResponse,
   SessionListResponse,
   User,
+  UserProfile,
 } from "@/types";
 
 const baseQuery = fetchBaseQuery({ baseUrl: BASE_URL, credentials: "include" });
@@ -32,6 +32,20 @@ export const apiSlice = createApi({
         method: "POST",
         body: data,
       }),
+    }),
+
+    googleLogin: builder.mutation<
+      LoginResponse,
+      { token: string; rememberMe?: boolean }
+    >({
+      query: (data) => {
+        console.log("data in query: ", data);
+        return {
+          url: `${AUTH_URL}/login/google`,
+          method: "POST",
+          body: data,
+        };
+      },
     }),
 
     verifyEmail: builder.query<BaseResponse, string>({
@@ -96,22 +110,17 @@ export const apiSlice = createApi({
       }),
     }),
 
-    googleLogin: builder.mutation<LoginResponse, { token: string }>({
-      query: (data) => ({
-        url: "/login/google",
-        method: "POST",
-        body: data,
-      }),
-    }),
-
-    getProfile: builder.query<User, void>({
-      query: () => ({
-        url: "/profile",
-        method: "GET",
-      }),
+    getProfile: builder.query<UserProfile, void>({
+      query: () => `${USERS_URL}/profile`,
       providesTags: ["User"],
     }),
   }),
 });
 
-export const { useRegisterMutation, useGoogleLoginMutation } = apiSlice;
+export const {
+  useRegisterMutation,
+  useGoogleLoginMutation,
+  useVerifyEmailQuery,
+  useLoginMutation,
+  useLazyGetProfileQuery,
+} = apiSlice;

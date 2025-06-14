@@ -31,10 +31,11 @@ export interface LoginFormData {
 }
 
 export type LoginResponse = BaseResponse & {
-  data: {
-    refreshToken: string;
-    accessToken: string;
-  };
+  data: null;
+};
+
+export type UserProfile = BaseResponse & {
+  data: User;
 };
 
 export type LogoutResponse = BaseResponse & {

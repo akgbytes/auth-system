@@ -4,15 +4,15 @@ import { CustomError } from "./CustomError";
 
 const client = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 
-export const verifyGoogleToken = async (credential: string) => {
-  if (!credential) {
-    throw new CustomError(400, "Google credential is required");
+export const verifyGoogleToken = async (token: string) => {
+  if (!token) {
+    throw new CustomError(400, "Google token is required");
   }
 
   let payload;
   try {
     const ticket = await client.verifyIdToken({
-      idToken: credential,
+      idToken: token,
       audience: env.GOOGLE_CLIENT_ID,
     });
     payload = ticket.getPayload();
