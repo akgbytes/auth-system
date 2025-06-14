@@ -77,7 +77,7 @@ export const register = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .json(new ApiResponse(200, "User registered successfully. Please verify your email", safeUser));
+    .json(new ApiResponse(200, "Registered Successfully. Please verify your email.", safeUser));
 });
 
 export const verifyEmail = asyncHandler(async (req, res) => {

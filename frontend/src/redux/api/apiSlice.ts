@@ -55,9 +55,9 @@ export const apiSlice = createApi({
       }),
     }),
 
-    resendVerificationEmail: builder.mutation<BaseResponse, { email: string }>({
+    resendVerification: builder.mutation<BaseResponse, { email: string }>({
       query: (data) => ({
-        url: "email/resend",
+        url: `${AUTH_URL}/email/resend`,
         method: "POST",
         body: data,
       }),
@@ -123,4 +123,5 @@ export const {
   useVerifyEmailQuery,
   useLoginMutation,
   useLazyGetProfileQuery,
+  useResendVerificationMutation,
 } = apiSlice;

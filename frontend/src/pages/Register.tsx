@@ -60,8 +60,9 @@ const Register = () => {
 
     try {
       const response = await registerUser(formData).unwrap();
-      toast.success("Registration successful!");
+      toast.success(response.message);
       console.log("Register response: ", response);
+      navigate("/login");
     } catch (error: any) {
       toast.error(error?.data?.message || "Registration failed");
       console.log("Register error: ", error);

@@ -1,3 +1,4 @@
+import { resendVerificationEmail } from "./../../../backend/src/controllers/auth.controller";
 export interface BaseResponse {
   message: string;
   statusCode: number;
@@ -28,6 +29,10 @@ export type RegisterResponse = BaseResponse & {
 export interface LoginFormData {
   email: string;
   password: string;
+}
+
+export interface ResendVerificationFormData {
+  email: string;
 }
 
 export type LoginResponse = BaseResponse & {
