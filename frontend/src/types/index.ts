@@ -38,6 +38,11 @@ export interface ForgotPasswordFormData {
   email: string;
 }
 
+export interface ResetPasswordFormData {
+  password: string;
+  confirmPassword: string;
+}
+
 export type LoginResponse = BaseResponse & {
   data: null;
 };

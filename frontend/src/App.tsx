@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import ResendVerificationEmail from "./pages/ResendVerification";
 import EmailVerification from "./pages/EmailVerification";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
           element={<ResendVerificationEmail />}
         />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <ToastContainer position="top-right" autoClose={2000} />

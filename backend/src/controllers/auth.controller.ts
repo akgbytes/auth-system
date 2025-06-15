@@ -328,7 +328,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
 export const resetPassword = asyncHandler(async (req, res) => {
   const { token } = req.params;
-  const { newPassword } = handleZodError(validateResetPassword(req.body));
+  const { password } = handleZodError(validateResetPassword(req.body));
 
   if (!token) {
     throw new CustomError(400, "Password reset token is missing");
@@ -347,12 +347,12 @@ export const resetPassword = asyncHandler(async (req, res) => {
     throw new CustomError(401, "Token is invalid or expired");
   }
 
-  const isSamePassword = await passwordMatch(newPassword, user.password as string);
+  const isSamePassword = await passwordMatch(password, user.password as string);
   if (isSamePassword) {
     throw new CustomError(400, "Password must be different from old password");
   }
 
-  const hashedPassword = await hashPassword(newPassword);
+  const hashedPassword = await hashPassword(password);
 
   await prisma.user.update({
     where: { id: user.id },

@@ -9,6 +9,7 @@ import type {
   BaseResponse,
   SessionListResponse,
   UserProfile,
+  ResetPasswordFormData,
 } from "@/types";
 
 const baseQuery = fetchBaseQuery({ baseUrl: BASE_URL, credentials: "include" });
@@ -72,7 +73,7 @@ export const apiSlice = createApi({
 
     resetPassword: builder.mutation<
       BaseResponse,
-      { token: string; password: string }
+      ResetPasswordFormData & { token: string }
     >({
       query: ({ token, password }) => ({
         url: `/password/reset/${token}`,
