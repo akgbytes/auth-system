@@ -34,6 +34,9 @@ export interface LoginFormData {
 export interface ResendVerificationFormData {
   email: string;
 }
+export interface ForgotPasswordFormData {
+  email: string;
+}
 
 export type LoginResponse = BaseResponse & {
   data: null;

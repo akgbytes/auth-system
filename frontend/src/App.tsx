@@ -7,6 +7,7 @@ import { ToastContainer } from "react-toastify";
 import Login from "./pages/Login";
 import ResendVerificationEmail from "./pages/ResendVerification";
 import EmailVerification from "./pages/EmailVerification";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
           path="/resend-verification"
           element={<ResendVerificationEmail />}
         />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <ToastContainer position="top-right" autoClose={2000} />

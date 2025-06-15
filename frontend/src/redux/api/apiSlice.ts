@@ -123,4 +123,10 @@ export const {
   useLoginMutation,
   useLazyGetProfileQuery,
   useResendVerificationMutation,
+  useDeleteSessionMutation,
+  useForgotPasswordMutation,
+  useGetSessionsQuery,
+  useLogoutAllMutation,
+  useLogoutMutation,
+  useResetPasswordMutation,
 } = apiSlice;
