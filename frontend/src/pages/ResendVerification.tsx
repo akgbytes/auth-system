@@ -18,7 +18,6 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Loader2, Mail, RefreshCw, Send } from "lucide-react";
 
 import type { ResendVerificationFormData } from "@/types";
-import { useAppSelector } from "@/hooks";
 
 const ResendVerificationEmail = () => {
   const {
@@ -169,7 +168,7 @@ const ResendVerificationEmail = () => {
 
             <Button
               type="submit"
-              className="w-full  cursor-pointer "
+              className="w-full cursor-pointer "
               variant={"outline"}
               disabled={isLoading}
             >

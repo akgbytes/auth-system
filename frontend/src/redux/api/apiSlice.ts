@@ -8,7 +8,6 @@ import type {
   LogoutResponse,
   BaseResponse,
   SessionListResponse,
-  User,
   UserProfile,
 } from "@/types";
 

@@ -8,7 +8,7 @@ const mailGenerator = new Mailgen({
   theme: "default",
   product: {
     name: "My Auth",
-    link: env.SERVER_URL,
+    link: env.CLIENT_URL,
   },
 });
 
@@ -82,14 +82,14 @@ const resetPasswordMailContent = (fullName: string, link: string) => {
 };
 
 const sendVerificationMail = async (fullName: string, email: string, token: string) => {
-  const link = `${env.SERVER_URL}/api/v1/auth/verify/${token}`;
+  const link = `${env.CLIENT_URL}/verify-email/${token}`;
   const capitalName = capitalize(fullName);
 
   await sendMail(email, "Verify Your Email", emailVerificationMailContent(capitalName, link));
 };
 
 const sendResetPasswordMail = async (fullName: string, email: string, token: string) => {
-  const link = `${env.SERVER_URL}/api/v1/auth/password/reset/${token}`;
+  const link = `${env.CLIENT_URL}/reset-password/${token}`;
   const capitalName = capitalize(fullName);
 
   await sendMail(email, "Reset Your Password", resetPasswordMailContent(capitalName, link));

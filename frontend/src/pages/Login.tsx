@@ -206,7 +206,7 @@ const Login = () => {
 
             <Button
               type="submit"
-              className="w-full  cursor-pointer "
+              className="w-full cursor-pointer "
               variant={"outline"}
               disabled={isLoading}
             >
@@ -250,7 +250,7 @@ const Login = () => {
                 Need to verify your email?{" "}
               </span>
               <Link
-                to="/"
+                to="/resend-verification"
                 className="hover:underline text-zinc-200 font-medium"
               >
                 Resend verification
