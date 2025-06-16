@@ -27,6 +27,7 @@ import {
 import { sanitizeUser } from "../utils/sanitizeUser";
 import { decodedUser } from "../types";
 import { verifyGoogleToken } from "../utils/verifyGoogleToken";
+import { transformSessions } from "../utils/transfromSessions";
 
 export const register = asyncHandler(async (req, res) => {
   const { email, password, fullname } = handleZodError(validateRegister(req.body));
@@ -450,6 +451,8 @@ export const getActiveSessions = asyncHandler(async (req, res) => {
   const { id: userId } = req.user;
   const currentRefreshToken = req.cookies.refreshToken as string;
 
+  const hashedRefreshToken = createHash(currentRefreshToken);
+
   const sessions = await prisma.session.findMany({
     where: { userId },
     select: {
@@ -463,19 +466,23 @@ export const getActiveSessions = asyncHandler(async (req, res) => {
     orderBy: { createdAt: "desc" },
   });
 
+  console.log("Sessions: ", sessions);
+
   // Setting true flag to current session
-  const formattedSessions = sessions.map((session) => ({
+  const setCurrentFlag = sessions.map((session) => ({
     ...session,
-    current: session.refreshToken === currentRefreshToken,
+    current: session.refreshToken === hashedRefreshToken,
   }));
 
-  res.status(200).json(
-    new ApiResponse(
-      200,
-      "Fetched all active sessions successfully",
-      formattedSessions.map(({ refreshToken, ...rest }) => rest),
-    ),
-  );
+  console.log("current flag: ", setCurrentFlag);
+
+  const removeRefreshToken = setCurrentFlag.map(({ refreshToken, ...rest }) => rest);
+
+  const formattedSessions = await transformSessions(removeRefreshToken);
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Fetched all active sessions successfully", formattedSessions));
 });
 
 export const logoutSpecificSession = asyncHandler(async (req, res) => {
@@ -584,4 +591,19 @@ export const googleLogin = asyncHandler(async (req, res) => {
     .cookie("accessToken", accessToken, generateCookieOptions({ type: "access" }))
     .cookie("refreshToken", refreshToken, generateCookieOptions({ type: "refresh", rememberMe }))
     .json(new ApiResponse(200, "Google login successful", null));
+});
+
+export const getProfile = asyncHandler(async (req, res) => {
+  const { id } = req.user;
+  const user = await prisma.user.findUnique({ where: { id } });
+
+  if (!user) {
+    throw new CustomError(404, "User not found");
+  }
+
+  const safeUser = sanitizeUser(user);
+
+  logger.info("User profile fetched", { email: user.email, userId: user.id, ip: req.ip });
+
+  res.status(200).json(new ApiResponse(200, "User profile fetched successfully", safeUser));
 });

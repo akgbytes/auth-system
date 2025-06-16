@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import { BASE_URL, AUTH_URL, USERS_URL } from "../../constants";
+import { BASE_URL, AUTH_URL } from "../../constants";
 import type {
   LoginFormData,
   LoginResponse,
@@ -38,14 +38,11 @@ export const apiSlice = createApi({
       LoginResponse,
       { token: string; rememberMe?: boolean }
     >({
-      query: (data) => {
-        console.log("data in query: ", data);
-        return {
-          url: `${AUTH_URL}/login/google`,
-          method: "POST",
-          body: data,
-        };
-      },
+      query: (data) => ({
+        url: `${AUTH_URL}/login/google`,
+        method: "POST",
+        body: data,
+      }),
     }),
 
     verifyEmail: builder.query<BaseResponse, string>({
@@ -65,7 +62,7 @@ export const apiSlice = createApi({
 
     forgotPassword: builder.mutation<BaseResponse, { email: string }>({
       query: (data) => ({
-        url: "/password/forgot",
+        url: `${AUTH_URL}/password/forgot`,
         method: "POST",
         body: data,
       }),
@@ -98,7 +95,7 @@ export const apiSlice = createApi({
 
     getSessions: builder.query<SessionListResponse, void>({
       query: () => ({
-        url: "/sessions",
+        url: `${AUTH_URL}/sessions`,
         method: "GET",
       }),
     }),
@@ -111,7 +108,7 @@ export const apiSlice = createApi({
     }),
 
     getProfile: builder.query<UserProfile, void>({
-      query: () => `${USERS_URL}/profile`,
+      query: () => `${AUTH_URL}/profile`,
       providesTags: ["User"],
     }),
   }),

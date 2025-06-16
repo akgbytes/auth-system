@@ -45,6 +45,7 @@ model Session {
   userAgent    String?
   ipAddress    String?
   createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   expiresAt    DateTime
 
   @@index([userId])

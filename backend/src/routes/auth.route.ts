@@ -14,6 +14,7 @@ import {
   getActiveSessions,
   googleLogin,
   logoutSpecificSession,
+  getProfile,
 } from "../controllers/auth.controller";
 import { upload } from "../middlewares/multer.middleware";
 import { isLoggedIn } from "../middlewares/auth.middleware";
@@ -42,5 +43,7 @@ router.get("/sessions", isLoggedIn, getActiveSessions);
 router.delete("/sessions/:sessionId", isLoggedIn, logoutSpecificSession);
 
 router.post("/login/google", googleLogin);
+
+router.get("/profile", isLoggedIn, getProfile);
 
 export default router;

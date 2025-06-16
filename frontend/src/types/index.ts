@@ -1,4 +1,3 @@
-import { resendVerificationEmail } from "./../../../backend/src/controllers/auth.controller";
 export interface BaseResponse {
   message: string;
   statusCode: number;
@@ -39,6 +38,7 @@ export interface ForgotPasswordFormData {
 }
 
 export interface ResetPasswordFormData {
+  token: string;
   password: string;
   confirmPassword: string;
 }
@@ -55,4 +55,16 @@ export type LogoutResponse = BaseResponse & {
   data: null;
 };
 
-export interface SessionListResponse {}
+export interface Session {
+  id: string;
+  device: string;
+  location: string;
+  ip: string;
+  lastActive: string;
+  status: "expired" | "active";
+  current: boolean;
+}
+
+export type SessionListResponse = BaseResponse & {
+  data: Session[];
+};

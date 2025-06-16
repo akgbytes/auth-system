@@ -9,13 +9,15 @@ import ResendVerificationEmail from "./pages/ResendVerification";
 import EmailVerification from "./pages/EmailVerification";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminRoutes from "./pages/AdminRoutes";
+import PrivateRoutes from "./pages/PrivateRoutes";
 
 const App = () => {
   return (
     <div>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/verify-email/:token" element={<EmailVerification />} />
@@ -24,7 +26,15 @@ const App = () => {
           element={<ResendVerificationEmail />}
         />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+        <Route element={<PrivateRoutes />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+        <Route element={<AdminRoutes />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Route>
+
         <Route path="*" element={<NotFound />} />
       </Routes>
       <ToastContainer position="top-right" autoClose={2000} />

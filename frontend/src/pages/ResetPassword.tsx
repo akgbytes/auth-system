@@ -17,7 +17,6 @@ import {
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CheckCircle, Eye, EyeOff, Loader2, Lock, XCircle } from "lucide-react";
 
-import { useAppDispatch } from "@/hooks";
 import type { ResetPasswordFormData } from "@/types";
 
 const ResetPassword = () => {
@@ -28,7 +27,6 @@ const ResetPassword = () => {
   } = useForm<ResetPasswordFormData>();
 
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
 
   const { token } = useParams();
 
