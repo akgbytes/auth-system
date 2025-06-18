@@ -9,9 +9,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "react-toastify";
-import { Mail, CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import {
-  useLazyGetProfileQuery,
+  useLazyFetchUserQuery,
   useVerifyEmailQuery,
 } from "@/redux/api/apiSlice";
 import { useAppDispatch } from "@/hooks";
@@ -31,13 +31,13 @@ const EmailVerification = () => {
     { skip: !token }
   );
 
-  const [getProfile] = useLazyGetProfileQuery();
+  const [getProfile] = useLazyFetchUserQuery();
 
   const verifyAndFetchProfile = async () => {
     if (isLoading) {
       setVerificationStatus("loading");
     } else if (isSuccess && data?.success) {
-      toast.success("Email verified successfully");
+      toast.success(data.message);
       console.log("verify email response: ", data);
       setVerificationStatus("success");
 
@@ -63,9 +63,9 @@ const EmailVerification = () => {
           toast.success("Login successful");
           navigate("/dashboard");
         }, 5000);
-      } catch (err) {
-        console.error("Failed to get profile", err);
-        toast.error("Something went wrong while logging in.");
+      } catch (error: any) {
+        console.error("Failed to get profile", error);
+        toast.error(error.data.message);
       }
     } else if (isError) {
       toast.error("Email verification failed");
@@ -76,7 +76,7 @@ const EmailVerification = () => {
 
   useEffect(() => {
     verifyAndFetchProfile();
-  }, [isLoading, isSuccess, isError, data]);
+  }, [isLoading]);
 
   const renderContent = () => {
     switch (verificationStatus) {
@@ -90,7 +90,7 @@ const EmailVerification = () => {
               <h2 className="text-xl font-semibold mb-2">
                 Verifying your email
               </h2>
-              <p className="text-zinc-400">
+              <p className="text-zinc-300/70">
                 Please wait while we verify your email address...
               </p>
             </div>
@@ -107,7 +107,7 @@ const EmailVerification = () => {
               <h2 className="text-xl font-semibold text-zinc-200 mb-2">
                 Email Verified!
               </h2>
-              <p className="text-zinc-400">
+              <p className="text-zinc-300/70">
                 Your email has been successfully verified. You can now access
                 all features of your account.
               </p>
@@ -135,7 +135,7 @@ const EmailVerification = () => {
               <h2 className="text-xl font-semibold text-zinc-200 mb-2">
                 Verification Failed
               </h2>
-              <p className="text-zinc-400">
+              <p className="text-zinc-300/70">
                 We couldn't verify your email. The link may be invalid or
                 expired.
               </p>
@@ -161,16 +161,11 @@ const EmailVerification = () => {
           <CardTitle className="text-2xl font-bold text-zinc-50">
             Email Verification
           </CardTitle>
-          <CardDescription className="text-zinc-400">
+          <CardDescription className="text-zinc-300/70">
             Verify your email address to complete registration
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex justify-center mb-4">
-            <Mail className="h-12 w-12 text-zinc-50" />
-          </div>
-          {renderContent()}
-        </CardContent>
+        <CardContent className="pt-0">{renderContent()}</CardContent>
       </Card>
     </div>
   );

@@ -11,38 +11,58 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { User, Settings, LogOut, Monitor, Smartphone } from "lucide-react";
+import {
+  User,
+  Settings,
+  LogOut,
+  Monitor,
+  Smartphone,
+  UserCog,
+} from "lucide-react";
 import { useAppSelector } from "@/hooks";
-import { useGetSessionsQuery } from "@/redux/api/apiSlice";
+import { useFetchUserSessionsQuery } from "@/redux/api/apiSlice";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const userProfile = useAppSelector((state) => state.auth.user);
 
+  const navigate = useNavigate();
+
   console.log("User profile: ", userProfile);
 
-  const { data, isLoading } = useGetSessionsQuery();
+  const { data, isLoading } = useFetchUserSessionsQuery();
   console.log("data: ", data);
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-zinc-900 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground">
-              Manage your account and sessions
-            </p>
+            <h1 className="text-3xl font-bold text-zinc-50">Dashboard</h1>
+            <p className="text-zinc-400">Manage your account and sessions</p>
           </div>
-          <Button variant="outline">
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout All Sessions
-          </Button>
+          <div className="flex gap-6 text-zinc-900">
+            {
+              // userProfile?.role === "admin"
+
+              true && (
+                <Button variant="outline" onClick={() => navigate("/admin")}>
+                  <UserCog className="h-4 w-4 mr-2 cursor-pointer" />
+                  Admin Dashboard
+                </Button>
+              )
+            }
+            <Button variant="outline">
+              <LogOut className="h-4 w-4 mr-2 cursor-pointer" />
+              Logout All Sessions
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-2 bg-zinc-500">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               Profile
@@ -54,7 +74,7 @@ const Dashboard = () => {
           </TabsList>
 
           <TabsContent value="profile">
-            <Card>
+            <Card className="bg-zinc-900 border-white/10 text-zinc-50">
               <CardHeader>
                 <CardTitle>Profile Information</CardTitle>
               </CardHeader>
@@ -105,7 +125,7 @@ const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="sessions">
-            <Card>
+            <Card className="bg-zinc-900 border-white/10 text-zinc-50">
               <CardHeader>
                 <CardTitle>Active Sessions</CardTitle>
               </CardHeader>
@@ -123,15 +143,27 @@ const Dashboard = () => {
                     ))}
                   </div>
                 ) : (
-                  <Table>
+                  <Table className="text-zinc-50">
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Device</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>IP Address</TableHead>
-                        <TableHead>Last Active</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="text-zinc-50 font-bold">
+                          Device
+                        </TableHead>
+                        <TableHead className="text-zinc-50 font-bold">
+                          Location
+                        </TableHead>
+                        <TableHead className="text-zinc-50 font-bold">
+                          IP Address
+                        </TableHead>
+                        <TableHead className="text-zinc-50 font-bold">
+                          Last Active
+                        </TableHead>
+                        <TableHead className="text-zinc-50 font-bold">
+                          Status
+                        </TableHead>
+                        <TableHead className="text-zinc-50 font-bold">
+                          Actions
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -141,7 +173,10 @@ const Dashboard = () => {
                             ? Smartphone
                             : Monitor;
                           return (
-                            <TableRow key={session.id}>
+                            <TableRow
+                              key={session.id}
+                              className="hover:bg-zinc-800 cursor-pointer"
+                            >
                               <TableCell className="flex items-center gap-2">
                                 <Icon className="h-4 w-4" />
                                 {session.device}
@@ -150,13 +185,18 @@ const Dashboard = () => {
                               <TableCell>{session.ip}</TableCell>
                               <TableCell>{session.lastActive}</TableCell>
                               <TableCell>
-                                {session.current ? (
-                                  <Badge variant="default">Current</Badge>
-                                ) : (
-                                  <Badge variant="secondary">
-                                    {session.status}
-                                  </Badge>
-                                )}
+                                <Badge
+                                  variant="default"
+                                  className={
+                                    session.current
+                                      ? "bg-zinc-50 text-zinc-900"
+                                      : session.status === "active"
+                                      ? "bg-green-300 text-zinc-800"
+                                      : "bg-red-400 text-zinc-50"
+                                  }
+                                >
+                                  {session.current ? "current" : session.status}
+                                </Badge>
                               </TableCell>
                               <TableCell>
                                 {!session.current && (

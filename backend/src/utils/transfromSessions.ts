@@ -5,7 +5,7 @@ import { logger } from "../configs/logger";
 
 interface SessionWithUserAgent {
   id: string;
-  createdAt: Date;
+  updatedAt: Date;
   userAgent: string | null;
   ipAddress: string | null;
   expiresAt: Date;
@@ -31,7 +31,7 @@ export const transformSessions = async (sessions: SessionWithUserAgent[]) => {
     const deviceType = parser.device.type || "Desktop";
     const device = `${deviceType} - ${browser}`;
     const location = await getLocationFromIP(session.ipAddress!);
-    const lastActive = format(new Date(session.createdAt), "d/M/yyyy, h:mm:ss a");
+    const lastActive = format(new Date(session.updatedAt), "d/M/yyyy, h:mm:ss a");
     const status = getSessionStatus(session.expiresAt);
 
     transformed.push({

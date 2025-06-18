@@ -36,9 +36,9 @@ const ResendVerificationEmail = () => {
       const response = await resendVerification(data).unwrap();
       console.log("Resend verification response: ", response);
       setEmailSent(true);
-      toast.success("Verification Email Sent");
+      toast.success(response.message);
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to send verification email");
+      toast.error(error.data?.message);
       console.log("Resend verification error: ", error);
     }
   };
@@ -51,7 +51,7 @@ const ResendVerificationEmail = () => {
             <CardTitle className="text-2xl font-bold text-zinc-50">
               Verification email sent
             </CardTitle>
-            <CardDescription className="text-zinc-400">
+            <CardDescription className="text-zinc-300/75">
               Check your email for the new verification link
             </CardDescription>
           </CardHeader>
@@ -68,22 +68,25 @@ const ResendVerificationEmail = () => {
                   <h3 className="text-lg font-semibold text-zinc-100 mb-2">
                     Verification email sent
                   </h3>
-                  <p className="text-zinc-400 text-sm">
+                  <p className="text-zinc-300/75 text-sm">
                     We've sent a verification link to{" "}
-                    <strong>{getValues("email")}</strong>. Please check your
-                    email and click the link to verify your account.
+                    <strong className="text-zinc-100 font-medium">
+                      {getValues("email")}
+                    </strong>
+                    . Please check your email and click the link to verify your
+                    account.
                   </p>
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-zinc-400 text-sm">
+                  <p className="text-zinc-300/75 text-sm">
                     Still didn't receive it? Check your spam folder or try again
                     in a few minutes.
                   </p>
                   <Button
                     onClick={() => setEmailSent(false)}
                     variant="outline"
-                    className="w-full cursor-pointer"
+                    className="w-full cursor-pointer py-5 rounded-[4px] text-zinc-700"
                   >
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Send again
@@ -94,7 +97,7 @@ const ResendVerificationEmail = () => {
 
             <Card className="bg-zinc-900 border-white/10 mt-6">
               <CardContent className="pt-0 text-center space-y-2">
-                <p className="text-zinc-400 text-sm">
+                <p className="text-zinc-300/75 text-sm">
                   Already verified?{" "}
                   <Link to="/login" className="text-zinc-100 hover:underline">
                     Go to login
@@ -115,7 +118,7 @@ const ResendVerificationEmail = () => {
           <CardTitle className="text-2xl font-bold text-zinc-50">
             Resend verification email
           </CardTitle>
-          <CardDescription className="text-zinc-400">
+          <CardDescription className="text-zinc-300/75">
             Enter your email to receive a new verification link
           </CardDescription>
         </CardHeader>
@@ -128,7 +131,7 @@ const ResendVerificationEmail = () => {
                   <h4 className="text-sm font-medium text-zinc-200 mb-1">
                     Need to verify your email?
                   </h4>
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-zinc-300/75">
                     If you didn't receive the verification email or if it
                     expired, you can request a new one using the form below.
                   </p>
@@ -161,14 +164,14 @@ const ResendVerificationEmail = () => {
                 <p className="text-red-500 text-sm">{errors.email.message}</p>
               )}
 
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs text-zinc-300/75 mt-1">
                 Enter the email address you used to register your account.
               </p>
             </div>
 
             <Button
               type="submit"
-              className="w-full cursor-pointer "
+              className="w-full cursor-pointer py-5 rounded-[4px] text-zinc-700"
               variant={"outline"}
               disabled={isLoading}
             >
@@ -188,7 +191,7 @@ const ResendVerificationEmail = () => {
 
           <Card className="bg-zinc-900 border-white/10 ">
             <CardContent className="text-center space-y-1">
-              <p className="text-zinc-400 text-sm">
+              <p className="text-zinc-300/60 text-sm">
                 <Link
                   to="/login"
                   className="hover:text-zinc-200 inline-flex items-center"
@@ -197,7 +200,7 @@ const ResendVerificationEmail = () => {
                   Back to login
                 </Link>
               </p>
-              <p className="text-zinc-400 text-sm">
+              <p className="text-zinc-300/60 text-sm">
                 Don't have an account?{" "}
                 <Link to="/register" className="text-zinc-100 hover:underline">
                   Sign up

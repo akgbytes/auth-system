@@ -1,7 +1,7 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import {
   useGoogleLoginMutation,
-  useLazyGetProfileQuery,
+  useLazyFetchUserQuery,
   useLoginMutation,
 } from "@/redux/api/apiSlice";
 
@@ -34,7 +34,7 @@ const Login = () => {
 
   const [login, { isLoading }] = useLoginMutation();
   const [googleLogin] = useGoogleLoginMutation();
-  const [getProfile] = useLazyGetProfileQuery();
+  const [getProfile] = useLazyFetchUserQuery();
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -56,7 +56,7 @@ const Login = () => {
         })
       );
 
-      toast.success("Login successful");
+      toast.success(response.message);
       navigate("/dashboard");
     } catch (error: any) {
       toast.error(error?.data?.message || "Login failed");
@@ -71,7 +71,7 @@ const Login = () => {
           <CardTitle className="text-2xl font-bold text-zinc-50">
             Welcome back
           </CardTitle>
-          <CardDescription className="text-muted-foreground">
+          <CardDescription className="text-zinc-300/70">
             Sign in to your account to continue
           </CardDescription>
         </CardHeader>
@@ -114,7 +114,7 @@ const Login = () => {
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-zinc-900 px-2 text-muted-foreground">
+              <span className="bg-zinc-900 px-2 text-zinc-300/70">
                 Or continue with
               </span>
             </div>
@@ -126,7 +126,7 @@ const Login = () => {
                 Email
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-300/70" />
                 <Input
                   {...register("email", {
                     required: "Email is required",
@@ -149,20 +149,20 @@ const Login = () => {
                 Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-300/70" />
                 <Input
                   {...register("password", {
                     required: "Password is required",
                     minLength: { value: 6, message: "Min 6 characters" },
                   })}
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your name"
+                  placeholder="Enter your password"
                   className="w-full pl-10 pr-4 py-3 border rounded border-white/10 bg-zinc-900 text-zinc-200 focus-visible:ring-zinc-50 focus-visible:ring-[1px]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-zinc-50"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-300/70 hover:text-zinc-50"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -191,14 +191,14 @@ const Login = () => {
                 />
                 <Label
                   htmlFor="rememberMe"
-                  className="text-sm text-muted-foreground cursor-pointer"
+                  className="text-sm text-zinc-300/90 cursor-pointer font-normal"
                 >
                   Remember me
                 </Label>
               </div>
               <Link
                 to="/forgot-password"
-                className="text-sm text-zinc-200 hover:text-zinc-400"
+                className="text-sm text-zinc-300/90 hover:text-zinc-400"
               >
                 Forgot password?
               </Link>
@@ -206,20 +206,11 @@ const Login = () => {
 
             <Button
               type="submit"
-              className="w-full cursor-pointer "
+              className="w-full cursor-pointer py-5 rounded-[4px] text-zinc-700"
               variant={"outline"}
               disabled={isLoading}
             >
               {isLoading ? (
-                //     <>
-                //       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-                //       Signing In...
-                //     </>
-                //   ) : (
-                //     <>
-                //       <LogIn className="h-4 w-4 mr-2" />
-                //       Sign In
-                //     </>
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing In...
@@ -235,7 +226,7 @@ const Login = () => {
 
           <div className="flex flex-col gap-2">
             <div className="text-center text-sm">
-              <span className="text-muted-foreground">
+              <span className="text-zinc-300/60">
                 Already have an account?{" "}
               </span>
               <Link
@@ -246,7 +237,7 @@ const Login = () => {
               </Link>
             </div>
             <div className="text-center text-sm">
-              <span className="text-muted-foreground">
+              <span className="text-zinc-300/60">
                 Need to verify your email?{" "}
               </span>
               <Link

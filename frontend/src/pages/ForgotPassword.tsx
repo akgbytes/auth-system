@@ -33,12 +33,10 @@ const ForgotPassword = () => {
       const response = await forgotPassword(data).unwrap();
       console.log("Forgot Password response: ", response);
       setEmailSent(true);
-      toast.success("Reset Email Sent");
+      toast.success(response.message);
     } catch (error: any) {
-      toast.error(
-        error?.data?.message || "Failed to send reset password email"
-      );
-      console.log("Reset Email error: ", error);
+      toast.error(error.data?.message);
+      console.log("Forgot Password error: ", error);
     }
   };
 
@@ -50,7 +48,7 @@ const ForgotPassword = () => {
             <CardTitle className="text-2xl font-bold text-zinc-50">
               Check your email
             </CardTitle>
-            <CardDescription className="text-zinc-400">
+            <CardDescription className="text-zinc-300/70">
               We've sent password reset instructions to your email
             </CardDescription>
           </CardHeader>
@@ -67,15 +65,18 @@ const ForgotPassword = () => {
                   <h3 className="text-lg font-semibold text-zinc-100 mb-2">
                     Password reset email sent
                   </h3>
-                  <p className="text-zinc-400 text-sm">
+                  <p className="text-zinc-300/70 text-sm">
                     We've sent a password reset link to{" "}
-                    <strong>{getValues("email")}</strong>. Please check your
-                    email and follow the instructions to reset your password.
+                    <strong className="text-zinc-100 font-medium">
+                      {getValues("email")}
+                    </strong>
+                    . Please check your email and follow the instructions to
+                    reset your password.
                   </p>
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-zinc-400 text-sm">
+                  <p className="text-zinc-300/70 text-sm">
                     Didn't receive the email? Check your spam folder or try
                     again.
                   </p>
@@ -93,7 +94,7 @@ const ForgotPassword = () => {
 
             <Card className="bg-zinc-900 border-white/10 mt-6">
               <CardContent className="pt-0 text-center space-y-2">
-                <p className="text-zinc-400 text-sm">
+                <p className="text-zinc-300/70 text-sm">
                   Remember your password?{" "}
                   <Link to="/login" className="text-zinc-100 hover:underline">
                     Back to login
@@ -114,7 +115,7 @@ const ForgotPassword = () => {
           <CardTitle className="text-2xl font-bold text-zinc-50">
             Forgot your password?
           </CardTitle>
-          <CardDescription className="text-zinc-400">
+          <CardDescription className="text-zinc-300/70">
             Enter your email and we'll send you a reset link
           </CardDescription>
         </CardHeader>
@@ -143,7 +144,7 @@ const ForgotPassword = () => {
                 <p className="text-red-500 text-sm">{errors.email.message}</p>
               )}
 
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs text-zinc-300/70 mt-1">
                 Enter the email address associated with your account and we'll
                 send you a link to reset your password.
               </p>
@@ -151,7 +152,7 @@ const ForgotPassword = () => {
 
             <Button
               type="submit"
-              className="w-full cursor-pointer "
+              className="w-full cursor-pointer py-5 rounded-[4px] text-zinc-700"
               variant={"outline"}
               disabled={isLoading}
             >
@@ -171,7 +172,7 @@ const ForgotPassword = () => {
 
           <Card className="bg-zinc-900 border-white/10 ">
             <CardContent className="text-center space-y-1">
-              <p className="text-zinc-400 text-sm">
+              <p className="text-zinc-300/60 text-sm">
                 <Link
                   to="/login"
                   className="hover:text-zinc-200 inline-flex items-center"
@@ -180,7 +181,7 @@ const ForgotPassword = () => {
                   Back to login
                 </Link>
               </p>
-              <p className="text-zinc-400 text-sm">
+              <p className="text-zinc-300/60 text-sm">
                 Don't have an account?{" "}
                 <Link to="/register" className="text-zinc-100 hover:underline">
                   Sign up

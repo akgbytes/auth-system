@@ -4,6 +4,10 @@ export interface BaseResponse {
   success: boolean;
 }
 
+export interface ApiResponse<T> extends BaseResponse {
+  data: T;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -14,16 +18,24 @@ export interface User {
   isVerified: boolean;
 }
 
+export interface Session {
+  id: string;
+  device: string;
+  location: string;
+  ip: string;
+  lastActive: string;
+  status: "expired" | "active";
+  current: boolean;
+}
+
+// FormData Types
+
 export interface RegisterFormData {
   email: string;
   password: string;
   fullname: string;
   avatar?: File | null;
 }
-
-export type RegisterResponse = BaseResponse & {
-  data: User;
-};
 
 export interface LoginFormData {
   email: string;
@@ -43,28 +55,4 @@ export interface ResetPasswordFormData {
   confirmPassword: string;
 }
 
-export type LoginResponse = BaseResponse & {
-  data: null;
-};
-
-export type UserProfile = BaseResponse & {
-  data: User;
-};
-
-export type LogoutResponse = BaseResponse & {
-  data: null;
-};
-
-export interface Session {
-  id: string;
-  device: string;
-  location: string;
-  ip: string;
-  lastActive: string;
-  status: "expired" | "active";
-  current: boolean;
-}
-
-export type SessionListResponse = BaseResponse & {
-  data: Session[];
-};
+// API Request n Response Types

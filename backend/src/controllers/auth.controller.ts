@@ -98,7 +98,7 @@ export const verifyEmail = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    throw new CustomError(401, "The verification link is invalid or has expired");
+    throw new CustomError(410, "The verification link is invalid or has expired");
   }
 
   const accessToken = generateAccessToken(user);
@@ -328,6 +328,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 });
 
 export const resetPassword = asyncHandler(async (req, res) => {
+  console.log("data: ", req.body);
   const { token } = req.params;
   const { password } = handleZodError(validateResetPassword(req.body));
 
@@ -345,7 +346,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    throw new CustomError(401, "Token is invalid or expired");
+    throw new CustomError(410, "Reset link has expired or is invalid.");
   }
 
   const isSamePassword = await passwordMatch(password, user.password as string);
@@ -459,7 +460,7 @@ export const getActiveSessions = asyncHandler(async (req, res) => {
       id: true,
       ipAddress: true,
       userAgent: true,
-      createdAt: true,
+      updatedAt: true,
       expiresAt: true,
       refreshToken: true,
     },

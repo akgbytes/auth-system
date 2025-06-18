@@ -1,114 +1,122 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import { BASE_URL, AUTH_URL } from "../../constants";
+import { BASE_URL, AUTH_PATH, ADMIN_PATH } from "../../constants";
 import type {
   LoginFormData,
-  LoginResponse,
-  RegisterResponse,
-  LogoutResponse,
-  BaseResponse,
-  SessionListResponse,
-  UserProfile,
   ResetPasswordFormData,
+  ApiResponse,
+  ResendVerificationFormData,
+  ForgotPasswordFormData,
+  Session,
+  User,
 } from "@/types";
 
-const baseQuery = fetchBaseQuery({ baseUrl: BASE_URL, credentials: "include" });
+const baseQuery = fetchBaseQuery({
+  baseUrl: BASE_URL,
+  credentials: "include",
+});
 
 export const apiSlice = createApi({
+  reducerPath: "authApi",
   baseQuery,
   tagTypes: ["User"],
   endpoints: (builder) => ({
-    register: builder.mutation<RegisterResponse, FormData>({
-      query: (data) => ({
-        url: `${AUTH_URL}/register`,
+    register: builder.mutation<ApiResponse<User>, FormData>({
+      query: (formData) => ({
+        url: `${AUTH_PATH}/register`,
         method: "POST",
-        body: data,
+        body: formData,
       }),
     }),
 
-    login: builder.mutation<LoginResponse, LoginFormData>({
-      query: (data) => ({
-        url: `${AUTH_URL}/login`,
+    login: builder.mutation<ApiResponse<null>, LoginFormData>({
+      query: (credentials) => ({
+        url: `${AUTH_PATH}/login`,
         method: "POST",
-        body: data,
+        body: credentials,
       }),
+      invalidatesTags: ["User"],
     }),
 
     googleLogin: builder.mutation<
-      LoginResponse,
+      ApiResponse<null>,
       { token: string; rememberMe?: boolean }
     >({
       query: (data) => ({
-        url: `${AUTH_URL}/login/google`,
+        url: `${AUTH_PATH}/login/google`,
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["User"],
     }),
 
-    verifyEmail: builder.query<BaseResponse, string>({
+    verifyEmail: builder.query<ApiResponse<null>, string>({
       query: (token) => ({
-        url: `${AUTH_URL}/verify/${token}`,
+        url: `${AUTH_PATH}/verify/${token}`,
         method: "GET",
       }),
     }),
 
-    resendVerification: builder.mutation<BaseResponse, { email: string }>({
-      query: (data) => ({
-        url: `${AUTH_URL}/email/resend`,
-        method: "POST",
-        body: data,
-      }),
-    }),
-
-    forgotPassword: builder.mutation<BaseResponse, { email: string }>({
-      query: (data) => ({
-        url: `${AUTH_URL}/password/forgot`,
-        method: "POST",
-        body: data,
-      }),
-    }),
-
-    resetPassword: builder.mutation<
-      BaseResponse,
-      ResetPasswordFormData & { token: string }
+    resendVerification: builder.mutation<
+      ApiResponse<null>,
+      ResendVerificationFormData
     >({
-      query: ({ token, password }) => ({
-        url: `/password/reset/${token}`,
+      query: (data) => ({
+        url: `${AUTH_PATH}/email/resend`,
         method: "POST",
-        body: { password },
+        body: data,
       }),
     }),
 
-    logout: builder.mutation<LogoutResponse, void>({
+    forgotPassword: builder.mutation<ApiResponse<null>, ForgotPasswordFormData>(
+      {
+        query: (data) => ({
+          url: `${AUTH_PATH}/password/forgot`,
+          method: "POST",
+          body: data,
+        }),
+      }
+    ),
+
+    resetPassword: builder.mutation<ApiResponse<null>, ResetPasswordFormData>({
+      query: ({ token, password, confirmPassword }) => ({
+        url: `${AUTH_PATH}/password/reset/${token}`,
+        method: "POST",
+        body: { password, confirmPassword },
+      }),
+    }),
+
+    logout: builder.mutation<ApiResponse<null>, void>({
       query: () => ({
-        url: `${AUTH_URL}/logout`,
+        url: `${AUTH_PATH}/logout`,
+        method: "POST",
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    logoutAll: builder.mutation<ApiResponse<null>, void>({
+      query: () => ({
+        url: `${AUTH_PATH}/logout/all`,
         method: "POST",
       }),
     }),
 
-    logoutAll: builder.mutation<BaseResponse, void>({
+    fetchUserSessions: builder.query<ApiResponse<Session[]>, void>({
       query: () => ({
-        url: "/logout/all",
-        method: "POST",
-      }),
-    }),
-
-    getSessions: builder.query<SessionListResponse, void>({
-      query: () => ({
-        url: `${AUTH_URL}/sessions`,
+        url: `${AUTH_PATH}/sessions`,
         method: "GET",
       }),
     }),
 
-    deleteSession: builder.mutation<BaseResponse, string>({
+    deleteSession: builder.mutation<ApiResponse<null>, string>({
       query: (sessionId) => ({
-        url: `/sessions/${sessionId}`,
+        url: `${AUTH_PATH}/sessions/${sessionId}`,
         method: "DELETE",
       }),
     }),
 
-    getProfile: builder.query<UserProfile, void>({
-      query: () => `${AUTH_URL}/profile`,
+    fetchUser: builder.query<ApiResponse<User>, void>({
+      query: () => `${AUTH_PATH}/profile`,
       providesTags: ["User"],
     }),
   }),
@@ -119,11 +127,12 @@ export const {
   useGoogleLoginMutation,
   useVerifyEmailQuery,
   useLoginMutation,
-  useLazyGetProfileQuery,
+  useFetchUserQuery,
+  useLazyFetchUserQuery,
   useResendVerificationMutation,
   useDeleteSessionMutation,
   useForgotPasswordMutation,
-  useGetSessionsQuery,
+  useFetchUserSessionsQuery,
   useLogoutAllMutation,
   useLogoutMutation,
   useResetPasswordMutation,

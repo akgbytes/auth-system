@@ -1,7 +1,7 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import {
   useGoogleLoginMutation,
-  useLazyGetProfileQuery,
+  useLazyFetchUserQuery,
   useRegisterMutation,
 } from "@/redux/api/apiSlice";
 import { useDropzone } from "react-dropzone";
@@ -20,7 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
-import { Loader2, Lock, Mail, User, UserPlus } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, Mail, User, UserPlus } from "lucide-react";
 import { setCredentials } from "@/redux/features/authSlice";
 import { useAppDispatch } from "@/hooks";
 
@@ -31,13 +31,15 @@ const Register = () => {
     formState: { errors },
   } = useForm<RegisterFormData>();
 
-  const [avatar, setAvatar] = useState<File | null>(null);
-  const [registerUser, { isLoading }] = useRegisterMutation();
-  const [googleLogin] = useGoogleLoginMutation();
-  const [getProfile] = useLazyGetProfileQuery();
-
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+
+  const [registerUser, { isLoading }] = useRegisterMutation();
+  const [googleLogin] = useGoogleLoginMutation();
+  const [getProfile] = useLazyFetchUserQuery();
+
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const onDrop = (acceptedFiles: File[]) => {
     if (acceptedFiles.length) {
@@ -61,10 +63,11 @@ const Register = () => {
     try {
       const response = await registerUser(formData).unwrap();
       toast.success(response.message);
+
       console.log("Register response: ", response);
       navigate("/login");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Registration failed");
+      toast.error(error.data?.message);
       console.log("Register error: ", error);
     }
   };
@@ -76,7 +79,7 @@ const Register = () => {
           <CardTitle className="text-2xl font-bold text-zinc-50">
             Create your account
           </CardTitle>
-          <CardDescription className="text-muted-foreground">
+          <CardDescription className="text-zinc-300/70">
             Join us today and get started
           </CardDescription>
         </CardHeader>
@@ -118,14 +121,14 @@ const Register = () => {
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-zinc-900 px-2 text-muted-foreground">
+              <span className="bg-zinc-900 px-2 text-zinc-300/70">
                 Or continue with
               </span>
             </div>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Dropzone */}
+            {/* Avatar upload */}
             <div>
               <div
                 {...getRootProps()}
@@ -153,7 +156,7 @@ const Register = () => {
                     minLength: { value: 6, message: "Min 6 characters" },
                   })}
                   placeholder="Enter your name"
-                  className="w-full pl-10 pr-4 py-3 border rounded border-white/10 bg-zinc-900 text-zinc-200 focus-visible:ring-zinc-50 focus-visible:ring-[1px]"
+                  className="w-full pl-10 pr-4 py-3 border rounded-md border-white/10 bg-zinc-900 text-zinc-200 focus-visible:ring-zinc-50 focus-visible:ring-[1px]"
                 />
               </div>
 
@@ -177,8 +180,8 @@ const Register = () => {
                       message: "Invalid email address",
                     },
                   })}
-                  placeholder="Enter your name"
-                  className="w-full pl-10 pr-4 py-3 border rounded border-white/10 bg-zinc-900 text-zinc-200 focus-visible:ring-zinc-50 focus-visible:ring-[1px]"
+                  placeholder="Enter your email"
+                  className="w-full pl-10 pr-4 py-3 border rounded-md border-white/10 bg-zinc-900 text-zinc-200 focus-visible:ring-zinc-50 focus-visible:ring-[1px]"
                 />
               </div>
 
@@ -197,9 +200,21 @@ const Register = () => {
                     required: "Password is required",
                     minLength: { value: 6, message: "Min 6 characters" },
                   })}
-                  placeholder="Enter your name"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
                   className="w-full pl-10 pr-4 py-3 border rounded border-white/10 bg-zinc-900 text-zinc-200 focus-visible:ring-zinc-50 focus-visible:ring-[1px]"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-zinc-50"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
               </div>
 
               {errors.password && (
@@ -211,7 +226,7 @@ const Register = () => {
 
             <Button
               type="submit"
-              className="w-full  cursor-pointer "
+              className="w-full cursor-pointer py-5 rounded-[4px] text-zinc-700"
               variant={"outline"}
               disabled={isLoading}
             >
@@ -230,9 +245,7 @@ const Register = () => {
           </form>
 
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">
-              Already have an account?{" "}
-            </span>
+            <span className="text-zinc-300/60">Already have an account? </span>
             <Link
               to="/login"
               className="hover:underline text-zinc-200 font-medium"

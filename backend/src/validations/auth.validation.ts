@@ -5,9 +5,9 @@ const strongPassword = z
   .string()
   .min(6, { message: "Password must be at least 6 characters long" })
   .max(16, { message: "Password must be at most 16 characters long" })
-  .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{6,}$/, {
+  .regex(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$/, {
     message:
-      "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.",
+      "Password must contain at least one uppercase letter, one lowercase letter, number and one special character.",
   });
 
 const registerSchema = z.object({

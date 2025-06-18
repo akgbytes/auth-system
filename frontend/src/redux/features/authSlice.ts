@@ -3,14 +3,14 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
   user: User | null;
-  isAuthenticated: boolean;
+  isLoggedIn: boolean;
 }
 
 const userFromStorage = localStorage.getItem("user");
 
 const initialState: AuthState = {
   user: userFromStorage ? JSON.parse(userFromStorage) : null,
-  isAuthenticated: !!userFromStorage,
+  isLoggedIn: !!userFromStorage,
 };
 
 const authSlice = createSlice({
@@ -20,14 +20,14 @@ const authSlice = createSlice({
     setCredentials: (state, action: PayloadAction<{ user: User }>) => {
       const { user } = action.payload;
       state.user = user;
-      state.isAuthenticated = true;
+      state.isLoggedIn = true;
 
       localStorage.setItem("user", JSON.stringify(user));
     },
 
     logout: (state) => {
       state.user = null;
-      state.isAuthenticated = false;
+      state.isLoggedIn = false;
 
       localStorage.removeItem("user");
     },
