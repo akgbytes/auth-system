@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -18,22 +17,68 @@ import {
   Monitor,
   Smartphone,
   UserCog,
+  Loader2,
 } from "lucide-react";
-import { useAppSelector } from "@/hooks";
-import { useFetchUserSessionsQuery } from "@/redux/api/apiSlice";
+import { useAppSelector, useUser } from "@/hooks";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
+import {
+  useFetchUserSessionsQuery,
+  useLogoutAllMutation,
+  useLogoutMutation,
+  useLogoutSpecificSessionMutation,
+} from "@/redux/api/apiSlice";
+import { toast } from "react-toastify";
 
 const Dashboard = () => {
+  const { data } = useUser();
   const userProfile = useAppSelector((state) => state.auth.user);
 
+  const { data: sessionData, isLoading } = useFetchUserSessionsQuery();
+  console.log("session data: ", sessionData);
+
+  const [logout, { isLoading: logoutLoading }] = useLogoutMutation();
+  const [logoutAll, { isLoading: logoutAllLoading }] = useLogoutAllMutation();
+  const [logoutSpecificSession, { isLoading: logoutSpecificSessionLoading }] =
+    useLogoutSpecificSessionMutation();
   const navigate = useNavigate();
+  const logoutHandler = async () => {
+    try {
+      const response = await logout().unwrap();
+      console.error("Logout response:", response);
+      toast.success(response.message);
+      navigate("/login");
+    } catch (error: any) {
+      toast.error(error?.data?.message);
+      console.error("Logout error:", error);
+    }
+  };
+
+  const logoutAllHandler = async () => {
+    try {
+      const response = await logoutAll().unwrap();
+      console.error("Logout response:", response);
+      toast.success(response.message);
+    } catch (error: any) {
+      toast.error(error?.data?.message);
+      console.error("Logout error:", error);
+    }
+  };
+
+  const logoutSpecificSessionHandler = async (id: string) => {
+    try {
+      const response = await logoutSpecificSession({ id }).unwrap();
+      console.error("Logout particular session response:", response);
+      toast.success(response.message);
+    } catch (error: any) {
+      toast.error(error?.data?.message);
+      console.error("Logout particular session error:", error);
+    }
+  };
 
   console.log("User profile: ", userProfile);
-
-  const { data, isLoading } = useFetchUserSessionsQuery();
-  console.log("data: ", data);
+  console.log("first", data);
 
   return (
     <div className="min-h-screen bg-zinc-900 p-6">
@@ -44,19 +89,52 @@ const Dashboard = () => {
             <p className="text-zinc-400">Manage your account and sessions</p>
           </div>
           <div className="flex gap-6 text-zinc-900">
-            {
-              // userProfile?.role === "admin"
+            {userProfile?.role === "admin" && (
+              <Button
+                variant="outline"
+                className="cursor-pointer"
+                onClick={() => navigate("/admin")}
+              >
+                <UserCog className="h-4 w-4 mr-2" />
+                Admin Dashboard
+              </Button>
+            )}
+            <Button
+              className="cursor-pointer text-zinc-700"
+              variant={"outline"}
+              disabled={logoutLoading}
+              onClick={logoutHandler}
+            >
+              {logoutLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Logout...
+                </>
+              ) : (
+                <>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </>
+              )}
+            </Button>
 
-              true && (
-                <Button variant="outline" onClick={() => navigate("/admin")}>
-                  <UserCog className="h-4 w-4 mr-2 cursor-pointer" />
-                  Admin Dashboard
-                </Button>
-              )
-            }
-            <Button variant="outline">
-              <LogOut className="h-4 w-4 mr-2 cursor-pointer" />
-              Logout All Sessions
+            <Button
+              className="cursor-pointer text-zinc-700"
+              variant={"outline"}
+              disabled={logoutAllLoading}
+              onClick={logoutAllHandler}
+            >
+              {logoutAllLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Logout...
+                </>
+              ) : (
+                <>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout All
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -142,7 +220,7 @@ const Dashboard = () => {
                       </div>
                     ))}
                   </div>
-                ) : (
+                ) : sessionData ? (
                   <Table className="text-zinc-50">
                     <TableHeader>
                       <TableRow className="hover:bg-transparent">
@@ -167,8 +245,8 @@ const Dashboard = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {data!.data &&
-                        data!.data.map((session) => {
+                      {sessionData.data &&
+                        sessionData.data.map((session) => {
                           const Icon = session.device.includes("Mobile")
                             ? Smartphone
                             : Monitor;
@@ -203,7 +281,10 @@ const Dashboard = () => {
                                   <Button
                                     variant="destructive"
                                     size="sm"
-                                    onClick={() => {}}
+                                    className="h-7 cursor-pointer"
+                                    onClick={() =>
+                                      logoutSpecificSessionHandler(session.id)
+                                    }
                                   >
                                     <LogOut className="h-4 w-4 mr-1" />
                                     Logout
@@ -215,7 +296,7 @@ const Dashboard = () => {
                         })}
                     </TableBody>
                   </Table>
-                )}
+                ) : null}
               </CardContent>
             </Card>
           </TabsContent>

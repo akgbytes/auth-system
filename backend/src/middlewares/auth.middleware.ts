@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { CustomError } from "../utils/CustomError";
-import jwt from "jsonwebtoken";
+import jwt, { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 import { env } from "../configs/env";
 import { decodedUser } from "../types";
 
@@ -14,6 +14,12 @@ export const isLoggedIn = async (req: Request, res: Response, next: NextFunction
     req.user = decoded as decodedUser;
     next();
   } catch (error) {
+    if (error instanceof TokenExpiredError) {
+      console.log("name");
+      console.log(error.name);
+      console.log("message");
+      console.log(error.message);
+    }
     throw new CustomError(401, "Invalid or expired access token");
   }
 };

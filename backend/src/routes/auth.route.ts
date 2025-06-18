@@ -35,12 +35,13 @@ router.post("/email/resend", resendVerificationRateLimiter, resendVerificationEm
 router.post("/login", authRateLimiter, login);
 router.post("/password/forgot", forgotPassword);
 router.post("/password/reset/:token", resetPassword);
+
 router.get("/refresh-token", refreshAccessToken);
 
 router.post("/logout", isLoggedIn, logout);
 router.post("/logout/all", isLoggedIn, logoutAllSessions);
 router.get("/sessions", isLoggedIn, getActiveSessions);
-router.delete("/sessions/:sessionId", isLoggedIn, logoutSpecificSession);
+router.post("/sessions/:sessionId", isLoggedIn, logoutSpecificSession);
 
 router.post("/login/google", googleLogin);
 

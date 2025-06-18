@@ -135,8 +135,8 @@ export const verifyEmail = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .cookie("accessToken", accessToken, generateCookieOptions({ type: "access" }))
-    .cookie("refreshToken", refreshToken, generateCookieOptions({ type: "refresh" }))
+    .cookie("accessToken", accessToken, generateCookieOptions())
+    .cookie("refreshToken", refreshToken, generateCookieOptions())
     .json(new ApiResponse(200, "Email verified successfully", null));
 });
 
@@ -252,8 +252,8 @@ export const login = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .cookie("accessToken", accessToken, generateCookieOptions({ type: "access" }))
-    .cookie("refreshToken", refreshToken, generateCookieOptions({ type: "refresh", rememberMe }))
+    .cookie("accessToken", accessToken, generateCookieOptions())
+    .cookie("refreshToken", refreshToken, generateCookieOptions({ rememberMe }))
     .json(new ApiResponse(200, "Logged in successfully", null));
 });
 
@@ -266,9 +266,11 @@ export const logout = asyncHandler(async (req, res) => {
     throw new CustomError(400, "Refresh token is missing.");
   }
 
+  const hashedRefreshToken = createHash(refreshToken);
+
   try {
     await prisma.session.delete({
-      where: { refreshToken },
+      where: { refreshToken: hashedRefreshToken },
     });
   } catch (error: any) {
     throw new CustomError(400, "Invalid or expired session. Please log in again.");
@@ -419,11 +421,11 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .cookie("accessToken", accessToken, generateCookieOptions({ type: "access" }))
+    .cookie("accessToken", accessToken, generateCookieOptions())
     .cookie(
       "refreshToken",
       refreshToken,
-      generateCookieOptions({ type: "refresh", rememberMe: validToken.rememberMe }),
+      generateCookieOptions({ rememberMe: validToken.rememberMe }),
     )
     .json(new ApiResponse(200, "Access token refreshed successfully", null));
 });
@@ -589,8 +591,8 @@ export const googleLogin = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .cookie("accessToken", accessToken, generateCookieOptions({ type: "access" }))
-    .cookie("refreshToken", refreshToken, generateCookieOptions({ type: "refresh", rememberMe }))
+    .cookie("accessToken", accessToken, generateCookieOptions())
+    .cookie("refreshToken", refreshToken, generateCookieOptions({ rememberMe }))
     .json(new ApiResponse(200, "Google login successful", null));
 });
 

@@ -10,11 +10,17 @@ import type {
   Session,
   User,
 } from "@/types";
+import { logout } from "../features/authSlice";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
   credentials: "include",
 });
+
+// const baseQueryWithReauth = (args, api, extraOptions) => {
+//   let result = await baseQuery(args, api, extraOptions);
+//   if(result.error?.status)
+// };
 
 export const apiSlice = createApi({
   reducerPath: "authApi",
@@ -101,6 +107,17 @@ export const apiSlice = createApi({
       }),
     }),
 
+    logoutSpecificSession: builder.mutation<ApiResponse<null>, { id: string }>({
+      query: ({ id }) => {
+        console.log("id recie", id);
+
+        return {
+          url: `${AUTH_PATH}/sessions/${id}`,
+          method: "POST",
+        };
+      },
+    }),
+
     fetchUserSessions: builder.query<ApiResponse<Session[]>, void>({
       query: () => ({
         url: `${AUTH_PATH}/sessions`,
@@ -135,5 +152,6 @@ export const {
   useFetchUserSessionsQuery,
   useLogoutAllMutation,
   useLogoutMutation,
+  useLogoutSpecificSessionMutation,
   useResetPasswordMutation,
 } = apiSlice;
