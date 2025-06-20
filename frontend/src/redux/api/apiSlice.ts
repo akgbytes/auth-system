@@ -1,4 +1,10 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import {
+  createApi,
+  fetchBaseQuery,
+  type BaseQueryFn,
+  type FetchArgs,
+  type FetchBaseQueryError,
+} from "@reduxjs/toolkit/query/react";
 
 import { BASE_URL, AUTH_PATH, ADMIN_PATH } from "../../constants";
 import type {
@@ -9,22 +15,38 @@ import type {
   ForgotPasswordFormData,
   Session,
   User,
+  AllUsers,
 } from "@/types";
-import { logout } from "../features/authSlice";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
   credentials: "include",
 });
 
-// const baseQueryWithReauth = (args, api, extraOptions) => {
-//   let result = await baseQuery(args, api, extraOptions);
-//   if(result.error?.status)
-// };
+const baseQueryWithReauth: BaseQueryFn<any, any, any> = async (
+  args,
+  api,
+  extraOptions
+) => {
+  let result = await baseQuery(args, api, extraOptions);
+  if (
+    result.error?.status === 401 &&
+    (result.error.data as { message?: string })?.message === "TokenExpiredError"
+  ) {
+    await baseQuery(`${AUTH_PATH}/refresh-token`, api, extraOptions);
+    result = await baseQuery(args, api, extraOptions);
+  }
+
+  return result;
+};
 
 export const apiSlice = createApi({
   reducerPath: "authApi",
-  baseQuery,
+  baseQuery: baseQueryWithReauth as BaseQueryFn<
+    string | FetchArgs,
+    unknown,
+    FetchBaseQueryError
+  >,
   tagTypes: ["User"],
   endpoints: (builder) => ({
     register: builder.mutation<ApiResponse<User>, FormData>({
@@ -108,14 +130,10 @@ export const apiSlice = createApi({
     }),
 
     logoutSpecificSession: builder.mutation<ApiResponse<null>, { id: string }>({
-      query: ({ id }) => {
-        console.log("id recie", id);
-
-        return {
-          url: `${AUTH_PATH}/sessions/${id}`,
-          method: "POST",
-        };
-      },
+      query: ({ id }) => ({
+        url: `${AUTH_PATH}/sessions/${id}`,
+        method: "POST",
+      }),
     }),
 
     fetchUserSessions: builder.query<ApiResponse<Session[]>, void>({
@@ -136,6 +154,21 @@ export const apiSlice = createApi({
       query: () => `${AUTH_PATH}/profile`,
       providesTags: ["User"],
     }),
+
+    fetchAllUsers: builder.query<ApiResponse<AllUsers[]>, void>({
+      query: () => `${ADMIN_PATH}/users`,
+    }),
+
+    fetchUserSession: builder.query<ApiResponse<Session[]>, { id: string }>({
+      query: ({ id }) => `${ADMIN_PATH}/users/${id}`,
+    }),
+
+    logoutUserSession: builder.mutation<ApiResponse<null>, { id: string }>({
+      query: ({ id }) => ({
+        url: `${ADMIN_PATH}/users/session/${id}`,
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -154,4 +187,7 @@ export const {
   useLogoutMutation,
   useLogoutSpecificSessionMutation,
   useResetPasswordMutation,
+  useLogoutUserSessionMutation,
+  useFetchAllUsersQuery,
+  useLazyFetchUserSessionQuery,
 } = apiSlice;

@@ -7,12 +7,12 @@ import {
   CardDescription,
   CardTitle,
 } from "@/components/ui/card";
-import { useUser } from "@/hooks";
+import { useAppSelector } from "@/hooks";
 import { Lock, Shield, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Home = () => {
-  const { isSuccess } = useUser();
+  const user = useAppSelector((state) => state.auth.user);
   return (
     <div className="min-h-screen bg-zinc-900">
       <div className="mx-auto px-4 py-16">
@@ -25,7 +25,7 @@ const Home = () => {
             management and administrative controls.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {isSuccess ? (
+            {user ? (
               <Button
                 size={"lg"}
                 className="bg-teal-600 hover:bg-teal-700 cursor-pointer"

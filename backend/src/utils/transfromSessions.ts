@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
 import { UAParser } from "ua-parser-js";
 import { format } from "date-fns";
 import { logger } from "../configs/logger";
+import { env } from "../configs/env";
 
 interface SessionWithUserAgent {
   id: string;
@@ -9,7 +9,7 @@ interface SessionWithUserAgent {
   userAgent: string | null;
   ipAddress: string | null;
   expiresAt: Date;
-  current: boolean;
+  current?: boolean;
 }
 
 interface TransformedSession {
@@ -19,7 +19,7 @@ interface TransformedSession {
   ip: string;
   lastActive: string;
   status: "expired" | "active";
-  current: boolean;
+  current?: boolean;
 }
 
 export const transformSessions = async (sessions: SessionWithUserAgent[]) => {
@@ -40,8 +40,8 @@ export const transformSessions = async (sessions: SessionWithUserAgent[]) => {
       location,
       ip: session.ipAddress!,
       lastActive,
-      current: session.current,
       status,
+      ...(session.current !== undefined && { current: session.current }),
     });
   }
 
@@ -52,7 +52,7 @@ const getLocationFromIP = async (ip: string): Promise<string> => {
   if (ip === "::1" || ip === "127.0.0.1") return "Localhost";
 
   try {
-    const token = process.env.IPINFO_TOKEN;
+    const token = env.IPINFO_TOKEN;
     const res = await fetch(`https://ipinfo.io/${ip}?token=${token}`);
     const data = (await res.json()) as { city?: string; country?: string };
 

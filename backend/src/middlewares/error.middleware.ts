@@ -7,8 +7,6 @@ import { MulterError } from "multer";
 export const errorHandler = (error: any, req: Request, res: Response, next: NextFunction): void => {
   let customError: CustomError;
 
-  console.log("error: ", error.message);
-
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
       case "P2002":

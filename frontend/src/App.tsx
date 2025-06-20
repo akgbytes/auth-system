@@ -12,8 +12,10 @@ import ResetPassword from "./pages/ResetPassword";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoutes from "./pages/AdminRoutes";
 import PrivateRoutes from "./pages/PrivateRoutes";
+import { useUser } from "./hooks";
 
 const App = () => {
+  useUser();
   return (
     <div>
       <Routes>

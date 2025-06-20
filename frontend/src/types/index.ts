@@ -25,7 +25,17 @@ export interface Session {
   ip: string;
   lastActive: string;
   status: "expired" | "active";
-  current: boolean;
+  current?: boolean;
+}
+
+export interface AllUsers {
+  id: string;
+  fullname: string;
+  email: string;
+  role: "user" | "admin";
+  status: "active" | "expired";
+  lastActive: string;
+  sessionsCount: number;
 }
 
 // FormData Types

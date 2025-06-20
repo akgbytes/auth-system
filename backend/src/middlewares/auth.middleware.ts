@@ -15,10 +15,7 @@ export const isLoggedIn = async (req: Request, res: Response, next: NextFunction
     next();
   } catch (error) {
     if (error instanceof TokenExpiredError) {
-      console.log("name");
-      console.log(error.name);
-      console.log("message");
-      console.log(error.message);
+      throw new CustomError(401, error.name);
     }
     throw new CustomError(401, "Invalid or expired access token");
   }

@@ -34,12 +34,10 @@ const ResendVerificationEmail = () => {
   const onSubmit: SubmitHandler<ResendVerificationFormData> = async (data) => {
     try {
       const response = await resendVerification(data).unwrap();
-      console.log("Resend verification response: ", response);
       setEmailSent(true);
       toast.success(response.message);
     } catch (error: any) {
       toast.error(error.data?.message);
-      console.log("Resend verification error: ", error);
     }
   };
 

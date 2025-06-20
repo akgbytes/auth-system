@@ -19,7 +19,7 @@ import {
   UserCog,
   Loader2,
 } from "lucide-react";
-import { useAppSelector, useUser } from "@/hooks";
+import { useAppSelector } from "@/hooks";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
@@ -32,53 +32,50 @@ import {
 import { toast } from "react-toastify";
 
 const Dashboard = () => {
-  const { data } = useUser();
   const userProfile = useAppSelector((state) => state.auth.user);
 
-  const { data: sessionData, isLoading } = useFetchUserSessionsQuery();
-  console.log("session data: ", sessionData);
+  const { data: sessionData, isLoading, refetch } = useFetchUserSessionsQuery();
 
   const [logout, { isLoading: logoutLoading }] = useLogoutMutation();
   const [logoutAll, { isLoading: logoutAllLoading }] = useLogoutAllMutation();
-  const [logoutSpecificSession, { isLoading: logoutSpecificSessionLoading }] =
-    useLogoutSpecificSessionMutation();
+  const [logoutSpecificSession] = useLogoutSpecificSessionMutation();
+
   const navigate = useNavigate();
   const logoutHandler = async () => {
     try {
       const response = await logout().unwrap();
-      console.error("Logout response:", response);
-      toast.success(response.message);
+      toast.success(response.message || "Logged out successfully.");
       navigate("/login");
     } catch (error: any) {
-      toast.error(error?.data?.message);
-      console.error("Logout error:", error);
+      toast.error(
+        error.data?.message || "Error while logging out. Please try again."
+      );
     }
   };
 
   const logoutAllHandler = async () => {
     try {
       const response = await logoutAll().unwrap();
-      console.error("Logout response:", response);
-      toast.success(response.message);
+      toast.success(response.message || "Logged out successfully.");
+      refetch();
     } catch (error: any) {
-      toast.error(error?.data?.message);
-      console.error("Logout error:", error);
+      toast.error(
+        error.data?.message || "Error while logging out. Please try again."
+      );
     }
   };
 
   const logoutSpecificSessionHandler = async (id: string) => {
     try {
       const response = await logoutSpecificSession({ id }).unwrap();
-      console.error("Logout particular session response:", response);
-      toast.success(response.message);
+      toast.success(response.message || "Logged out successfully.");
+      refetch();
     } catch (error: any) {
-      toast.error(error?.data?.message);
-      console.error("Logout particular session error:", error);
+      toast.error(
+        error.data?.message || "Error while logging out. Please try again."
+      );
     }
   };
-
-  console.log("User profile: ", userProfile);
-  console.log("first", data);
 
   return (
     <div className="min-h-screen bg-zinc-900 p-6">

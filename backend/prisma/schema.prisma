@@ -23,7 +23,7 @@ model User {
   email                   String    @unique
   password                String?
   fullname                String
-  avatar                  String?   @default("https://avatar.iran.liara.run/public/48")
+  avatar                  String?   @default("https://res.cloudinary.com/dmnh10etf/image/upload/v1750270944/default_epnleu.png")
   role                    UserRole  @default(user)
   provider                Provider  @default(local)
   isVerified              Boolean   @default(false)

@@ -330,7 +330,6 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 });
 
 export const resetPassword = asyncHandler(async (req, res) => {
-  console.log("data: ", req.body);
   const { token } = req.params;
   const { password } = handleZodError(validateResetPassword(req.body));
 
@@ -389,8 +388,10 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new CustomError(401, "Invalid or expired refresh token");
   }
 
+  const hashedIncomingRefreshToken = createHash(incomingRefreshToken);
+
   const validToken = await prisma.session.findUnique({
-    where: { refreshToken: incomingRefreshToken },
+    where: { refreshToken: hashedIncomingRefreshToken },
   });
 
   if (!validToken) {
@@ -469,18 +470,13 @@ export const getActiveSessions = asyncHandler(async (req, res) => {
     orderBy: { createdAt: "desc" },
   });
 
-  console.log("Sessions: ", sessions);
-
   // Setting true flag to current session
   const setCurrentFlag = sessions.map((session) => ({
     ...session,
     current: session.refreshToken === hashedRefreshToken,
   }));
 
-  console.log("current flag: ", setCurrentFlag);
-
   const removeRefreshToken = setCurrentFlag.map(({ refreshToken, ...rest }) => rest);
-
   const formattedSessions = await transformSessions(removeRefreshToken);
 
   res

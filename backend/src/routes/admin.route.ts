@@ -4,7 +4,7 @@ import { isLoggedIn } from "../middlewares/auth.middleware";
 import { isAdmin } from "../middlewares/role.middleware";
 import {
   deleteUserById,
-  deleteUserSessionById,
+  logoutUserSession,
   getAllUsers,
   getUserById,
   updateUserRole,
@@ -14,8 +14,8 @@ const router = Router();
 
 router.get("/users", isLoggedIn, isAdmin, getAllUsers);
 router.get("/users/:userId", isLoggedIn, isAdmin, getUserById);
+router.post("/users/session/:sessionId", isLoggedIn, isAdmin, logoutUserSession);
 router.patch("/users/:userId", isLoggedIn, isAdmin, updateUserRole);
 router.delete("/users/:userId", isLoggedIn, isAdmin, deleteUserById);
-router.delete("/users/sessions/:sessionId", isLoggedIn, isAdmin, deleteUserSessionById);
 
 export default router;

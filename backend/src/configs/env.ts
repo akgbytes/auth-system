@@ -63,14 +63,13 @@ const envSchema = z.object({
   MAX_SESSIONS: validNumber("MAX_SESSIONS"),
 
   GOOGLE_CLIENT_ID: nonEmptyString("GOOGLE_CLIENT_ID"),
-  GOOGLE_CLIENT_SECRET: nonEmptyString("GOOGLE_CLIENT_ID"),
+  IPINFO_TOKEN: nonEmptyString("IPINFO_TOKEN"),
 });
 
 const createEnv = (env: NodeJS.ProcessEnv) => {
   const result = envSchema.safeParse(env);
 
   if (!result.success) {
-    console.log("ressult error: ", result.error);
     const messages = result.error.errors.map((err) => `- ${err.message}`).join("\n");
 
     logger.error(`Environment variable validation failed\n${messages}`);

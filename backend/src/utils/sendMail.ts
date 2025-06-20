@@ -3,7 +3,6 @@ import nodemailer from "nodemailer";
 import { env } from "../configs/env";
 import { CustomError } from "./CustomError";
 import { capitalize } from "./helper";
-import { error } from "console";
 
 const mailGenerator = new Mailgen({
   theme: "default",
@@ -36,7 +35,6 @@ const sendMail = async (email: string, subject: string, content: Mailgen.Content
       html,
     });
   } catch (error) {
-    console.log("error from mail: ", error);
     throw new CustomError(500, `Failed to send "${subject}" email.`);
   }
 };
@@ -84,7 +82,7 @@ const resetPasswordMailContent = (fullName: string, link: string) => {
 };
 
 const sendVerificationMail = async (fullName: string, email: string, token: string) => {
-  const link = `${env.CLIENT_URL}/reset-password/${token}`;
+  const link = `${env.CLIENT_URL}/verify-email/${token}`;
   const capitalName = capitalize(fullName);
 
   await sendMail(email, "Verify Your Email", emailVerificationMailContent(capitalName, link));

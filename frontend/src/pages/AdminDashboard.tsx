@@ -18,144 +18,63 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "react-toastify";
-import {
-  Users,
-  Search,
-  LogOut,
-  Monitor,
-  Smartphone,
-  Globe,
-  Shield,
-} from "lucide-react";
+import { Search, LogOut, Monitor, Smartphone } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import {
+  useLogoutUserSessionMutation,
+  useLazyFetchUserSessionQuery,
+  useFetchAllUsersQuery,
+} from "../redux/api/apiSlice";
+
 const AdminDashboard = () => {
+  const {
+    data: users,
+    isLoading,
+    isSuccess,
+    refetch,
+  } = useFetchAllUsersQuery();
+
+  const [logoutUser, {}] = useLogoutUserSessionMutation();
+  const [
+    fetchUserSession,
+    {
+      data: sessionData,
+      isSuccess: isSessionSuccess,
+      isLoading: isSessionLoading,
+    },
+  ] = useLazyFetchUserSessionQuery();
+
+  const logoutUserHandler = async (sessionId: string) => {
+    try {
+      const response = await logoutUser({ id: sessionId }).unwrap();
+
+      toast.success(response.message || "Logged out successfully.");
+      refetch();
+      setIsSessionModalOpen(false);
+    } catch (error: any) {
+      toast.error(
+        error.data.message || "Error while logging out. Please try again."
+      );
+    }
+  };
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(false);
-
-  const [users] = useState([
-    {
-      id: "1",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      role: "User",
-      status: "Active",
-      lastLogin: "2 minutes ago",
-      sessionsCount: 3,
-    },
-    {
-      id: "2",
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      role: "User",
-      status: "Active",
-      lastLogin: "1 hour ago",
-      sessionsCount: 1,
-    },
-    {
-      id: "3",
-      name: "Bob Johnson",
-      email: "bob.johnson@example.com",
-      role: "Admin",
-      status: "Inactive",
-      lastLogin: "2 days ago",
-      sessionsCount: 0,
-    },
-    {
-      id: "4",
-      name: "Alice Wilson",
-      email: "alice.wilson@example.com",
-      role: "User",
-      status: "Active",
-      lastLogin: "30 minutes ago",
-      sessionsCount: 2,
-    },
-  ]);
-
-  const [userSessions] = useState({
-    "1": [
-      {
-        id: "1-1",
-        device: "Desktop - Chrome",
-        location: "New York, USA",
-        ip: "192.168.1.1",
-        lastActive: "2 minutes ago",
-        icon: Monitor,
-      },
-      {
-        id: "1-2",
-        device: "Mobile - Safari",
-        location: "New York, USA",
-        ip: "192.168.1.2",
-        lastActive: "1 hour ago",
-        icon: Smartphone,
-      },
-      {
-        id: "1-3",
-        device: "Desktop - Firefox",
-        location: "Los Angeles, USA",
-        ip: "10.0.0.1",
-        lastActive: "3 days ago",
-        icon: Globe,
-      },
-    ],
-    "2": [
-      {
-        id: "2-1",
-        device: "Mobile - Chrome",
-        location: "Boston, USA",
-        ip: "192.168.2.1",
-        lastActive: "1 hour ago",
-        icon: Smartphone,
-      },
-    ],
-    "4": [
-      {
-        id: "4-1",
-        device: "Desktop - Safari",
-        location: "Seattle, USA",
-        ip: "10.1.0.1",
-        lastActive: "30 minutes ago",
-        icon: Monitor,
-      },
-      {
-        id: "4-2",
-        device: "Tablet - Chrome",
-        location: "Seattle, USA",
-        ip: "10.1.0.2",
-        lastActive: "2 hours ago",
-        icon: Globe,
-      },
-    ],
-  });
-
-  const filteredUsers = users.filter(
+  const filteredUsers = users?.data.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleViewSessions = (user: any) => {
-    setSelectedUser(user);
+  const viewSessionsHandler = async (user: any) => {
+    setSelectedUser(user.fullname);
     setIsSessionModalOpen(true);
-  };
-
-  const handleLogoutUserSession = (sessionId: string, device: string) => {
-    // toast({
-    //   title: "Session Terminated",
-    //   description: `Logged out user from ${device}`,
-    // });
-  };
-
-  const handleLogoutAllUserSessions = () => {
-    // toast({
-    //   title: "All Sessions Terminated",
-    //   description: `All sessions for ${selectedUser?.name} have been terminated`,
-    // });
-    setIsSessionModalOpen(false);
+    try {
+      await fetchUserSession({ id: user.id }).unwrap();
+    } catch (error: any) {}
   };
 
   return (
@@ -169,20 +88,23 @@ const AdminDashboard = () => {
             <p className="text-zinc-400">Manage users and their sessions</p>
           </div>
         </div>
-
         <Card className="bg-zinc-900 border-white/10 text-zinc-50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-2xl">
               User Management
             </CardTitle>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 mt-2">
               <div className="relative flex-1">
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search users..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    if (isSuccess) {
+                      setSearchTerm(e.target.value);
+                    }
+                    return;
+                  }}
                   className="pl-8"
                 />
               </div>
@@ -229,38 +151,39 @@ const AdminDashboard = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.map((user) => (
+                  {filteredUsers?.map((user) => (
                     <TableRow
                       className="hover:bg-zinc-800 cursor-pointer"
                       key={user.id}
                     >
-                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell className="font-medium">
+                        {user.fullname}
+                      </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
                         <Badge
-                          variant={
-                            user.role === "Admin" ? "default" : "secondary"
+                          className={
+                            user.role === "admin"
+                              ? "bg-rose-600 w-14 text-zinc-50"
+                              : "bg-zinc-50 text-zinc-800 w-14"
                           }
                         >
                           {user.role}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            user.status === "Active" ? "default" : "destructive"
-                          }
-                        >
-                          {user.status}
-                        </Badge>
+                      <TableCell>{user.status}</TableCell>
+                      <TableCell>{user.lastActive}</TableCell>
+                      <TableCell className="pl-8">
+                        {user.sessionsCount}
                       </TableCell>
-                      <TableCell>{user.lastLogin}</TableCell>
-                      <TableCell>{user.sessionsCount}</TableCell>
                       <TableCell>
                         <Button
                           variant="outline"
+                          className="text-zinc-900 cursor-pointer"
                           size="sm"
-                          onClick={() => handleViewSessions(user)}
+                          onClick={() => {
+                            viewSessionsHandler(user);
+                          }}
                           disabled={user.sessionsCount === 0}
                         >
                           View Sessions
@@ -275,18 +198,10 @@ const AdminDashboard = () => {
         </Card>
 
         <Dialog open={isSessionModalOpen} onOpenChange={setIsSessionModalOpen}>
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="min-w-2xl">
             <DialogHeader>
-              <DialogTitle className="flex items-center justify-between">
-                <span>Sessions for {selectedUser?.name}</span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleLogoutAllUserSessions}
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout All Sessions
-                </Button>
+              <DialogTitle className="flex items-center justify-between -mt-2">
+                <span className="block">Sessions for {selectedUser}</span>
               </DialogTitle>
             </DialogHeader>
             <div className="mt-4">
@@ -301,15 +216,17 @@ const AdminDashboard = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {isSessionLoading && <div>Loading...</div>}
                   {selectedUser &&
-                    userSessions[
-                      selectedUser.id as keyof typeof userSessions
-                    ]?.map((session) => {
-                      const IconComponent = session.icon;
+                    isSessionSuccess &&
+                    sessionData?.data.map((session) => {
+                      const Icon = session.device.includes("Mobile")
+                        ? Smartphone
+                        : Monitor;
                       return (
                         <TableRow key={session.id}>
                           <TableCell className="flex items-center gap-2">
-                            <IconComponent className="h-4 w-4" />
+                            <Icon className="h-4 w-4" />
                             {session.device}
                           </TableCell>
                           <TableCell>{session.location}</TableCell>
@@ -317,14 +234,10 @@ const AdminDashboard = () => {
                           <TableCell>{session.lastActive}</TableCell>
                           <TableCell>
                             <Button
+                              className="cursor-pointer"
                               variant="destructive"
                               size="sm"
-                              onClick={() =>
-                                handleLogoutUserSession(
-                                  session.id,
-                                  session.device
-                                )
-                              }
+                              onClick={() => logoutUserHandler(session.id)}
                             >
                               <LogOut className="h-4 w-4 mr-1" />
                               Logout

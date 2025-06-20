@@ -31,12 +31,10 @@ const ForgotPassword = () => {
   const onSubmit: SubmitHandler<ForgotPasswordFormData> = async (data) => {
     try {
       const response = await forgotPassword(data).unwrap();
-      console.log("Forgot Password response: ", response);
       setEmailSent(true);
       toast.success(response.message);
     } catch (error: any) {
       toast.error(error.data?.message);
-      console.log("Forgot Password error: ", error);
     }
   };
 

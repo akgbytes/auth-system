@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "../redux";
 import { useLazyFetchUserQuery } from "@/redux/api/apiSlice";
-import { setCredentials } from "@/redux/features/authSlice";
+import { logout, setCredentials } from "@/redux/features/authSlice";
 import { useEffect } from "react";
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
@@ -17,10 +17,13 @@ export const useUser = () => {
   }, []);
 
   useEffect(() => {
-    if (isSuccess && data?.data) {
+    if (isSuccess && data) {
       dispatch(setCredentials({ user: data.data }));
     }
-  }, [isSuccess, data, dispatch]);
+    if (isError) {
+      dispatch(logout());
+    }
+  }, [isSuccess, isError, data, dispatch]);
 
   return {
     data,

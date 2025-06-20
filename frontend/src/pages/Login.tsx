@@ -45,10 +45,7 @@ const Login = () => {
   const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
     try {
       const response = await login(data).unwrap();
-      console.log("Login response: ", response);
-
       const user = await getProfile().unwrap();
-      console.log("get profile response: ", user);
 
       dispatch(
         setCredentials({
@@ -60,7 +57,6 @@ const Login = () => {
       navigate("/dashboard");
     } catch (error: any) {
       toast.error(error?.data?.message || "Login failed");
-      console.log("Login error: ", error);
     }
   };
 
@@ -87,11 +83,7 @@ const Login = () => {
                   rememberMe,
                 }).unwrap();
 
-                console.log("google response from backend: ", response);
-
                 const user = await getProfile().unwrap();
-
-                console.log("get profile response: ", user);
 
                 dispatch(
                   setCredentials({
@@ -102,7 +94,6 @@ const Login = () => {
                 toast.success("Login successful");
                 navigate("/dashboard");
               } catch (error: any) {
-                console.log("google error from backend : ", error);
                 toast.error(error.data.message);
               }
             }}

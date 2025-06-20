@@ -62,13 +62,12 @@ const Register = () => {
 
     try {
       const response = await registerUser(formData).unwrap();
-      toast.success(response.message);
-
-      console.log("Register response: ", response);
+      toast.success(response.message || "Registration successful.");
       navigate("/login");
     } catch (error: any) {
-      toast.error(error.data?.message);
-      console.log("Register error: ", error);
+      toast.error(
+        error.data?.message || "Registration failed. Please try again."
+      );
     }
   };
 
@@ -90,15 +89,11 @@ const Register = () => {
             onSuccess={async (credentialResponse) => {
               try {
                 const idToken = credentialResponse.credential;
-                const response = await googleLogin({
+                await googleLogin({
                   token: idToken!,
                 }).unwrap();
 
-                console.log("google response from backend: ", response);
-
                 const user = await getProfile().unwrap();
-
-                console.log("get profile response: ", user);
 
                 dispatch(
                   setCredentials({
@@ -109,7 +104,6 @@ const Register = () => {
                 toast.success("Login successful");
                 navigate("/dashboard");
               } catch (error: any) {
-                console.log("google error from backend : ", error);
                 toast.error(error?.data?.message);
               }
             }}

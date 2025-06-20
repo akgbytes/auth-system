@@ -2,6 +2,8 @@ import { v2 as cloudinary } from "cloudinary";
 import fs from "fs/promises";
 import { env } from "./env";
 import { CustomError } from "../utils/CustomError";
+import path from "path";
+import { logger } from "./logger";
 
 cloudinary.config({
   cloud_name: env.CLOUDINARY_NAME,
@@ -24,9 +26,10 @@ export const uploadOnCloudinary = async (localFilePath: string) => {
     throw new CustomError(500, error.message);
   } finally {
     try {
-      await fs.unlink(localFilePath);
+      const absolutePath = path.resolve(localFilePath);
+      await fs.unlink(absolutePath);
     } catch (unlinkErr) {
-      console.warn(`Failed to delete local file: ${localFilePath}`, unlinkErr);
+      logger.warn(`Failed to delete local file: ${localFilePath}`, unlinkErr);
     }
   }
 };

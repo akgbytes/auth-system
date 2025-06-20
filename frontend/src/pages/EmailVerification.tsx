@@ -37,14 +37,11 @@ const EmailVerification = () => {
     if (isLoading) {
       setVerificationStatus("loading");
     } else if (isSuccess && data?.success) {
-      toast.success(data.message);
-      console.log("verify email response: ", data);
+      toast.success(data.message || "Email verified successful.");
       setVerificationStatus("success");
 
       try {
         const user = await getProfile().unwrap();
-        console.log("get profile response: ", user);
-
         let seconds = 5;
         setCountdown(seconds);
 
@@ -64,13 +61,11 @@ const EmailVerification = () => {
           navigate("/dashboard");
         }, 5000);
       } catch (error: any) {
-        console.error("Failed to get profile", error);
         toast.error(error.data.message);
       }
     } else if (isError) {
       toast.error("Email verification failed");
       setVerificationStatus("error");
-      console.log("verify email error: ", error);
     }
   };
 

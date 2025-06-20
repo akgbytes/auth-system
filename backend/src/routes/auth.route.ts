@@ -33,7 +33,7 @@ router.post(
 router.get("/verify/:token", verifyEmail);
 router.post("/email/resend", resendVerificationRateLimiter, resendVerificationEmail);
 router.post("/login", authRateLimiter, login);
-router.post("/password/forgot", forgotPassword);
+router.post("/password/forgot", forgotPasswordRateLimiter, forgotPassword);
 router.post("/password/reset/:token", resetPassword);
 
 router.get("/refresh-token", refreshAccessToken);
