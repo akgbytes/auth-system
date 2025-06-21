@@ -78,7 +78,7 @@ const Login = () => {
             onSuccess={async (credentialResponse) => {
               try {
                 const idToken = credentialResponse.credential;
-                const response = await googleLogin({
+                await googleLogin({
                   token: idToken!,
                   rememberMe,
                 }).unwrap();
