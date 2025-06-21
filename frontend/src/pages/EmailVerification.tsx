@@ -26,10 +26,9 @@ const EmailVerification = () => {
   >("loading");
   const [countdown, setCountdown] = useState(5);
 
-  const { data, isLoading, error, isSuccess, isError } = useVerifyEmailQuery(
-    token!,
-    { skip: !token }
-  );
+  const { data, isLoading, isSuccess, isError } = useVerifyEmailQuery(token!, {
+    skip: !token,
+  });
 
   const [getProfile] = useLazyFetchUserQuery();
 
