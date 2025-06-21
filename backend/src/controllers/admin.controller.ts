@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { prisma } from "../configs/db";
 import { logger } from "../configs/logger";
-import { UserRole } from "../generated/prisma";
+import { UserRole } from "@prisma/client";
 import { ApiResponse } from "../utils/ApiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { CustomError } from "../utils/CustomError";

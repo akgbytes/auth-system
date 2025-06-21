@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { logger } from "../configs/logger";
 import { CustomError } from "../utils/CustomError";
-import { Prisma } from "../generated/prisma";
+import { Prisma } from "@prisma/client";
 import { MulterError } from "multer";
 
 export const errorHandler = (error: any, req: Request, res: Response, next: NextFunction): void => {
